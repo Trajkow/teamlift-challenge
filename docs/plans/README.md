@@ -11,7 +11,7 @@ without any earlier conversation.
 | Phase | File | Scope | Depends on | Status |
 |-------|------|-------|------------|--------|
 | 0 | [phase-0.md](phase-0.md) | Repo scaffold: git, backend + frontend skeletons, DB | — | ✅ done |
-| 1 | [phase-1.md](phase-1.md) | Backend: slots, bookings, no-double-booking constraints, e2e + concurrency test | 0 | ⏳ todo |
+| 1 | [phase-1.md](phase-1.md) | Backend: slots, bookings, no-double-booking constraints, e2e + concurrency test | 0 | ✅ done |
 | 2 | [phase-2.md](phase-2.md) | Frontend: guest booking page + host page | 0 (API contract below); 1 to test end to end | ⏳ todo |
 | 3 | [phase-3.md](phase-3.md) | Optional extra: AI confirmation message (Gemini free tier) | 1, 2 | ⏳ todo |
 | 4 | [phase-4.md](phase-4.md) | Deploy: Neon (DB) + Render (API) + Vercel (web) | 1, 2 (3 if done) | ⏳ todo |
