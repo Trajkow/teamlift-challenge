@@ -1,3 +1,4 @@
+import { getHostKey } from "@/lib/host-key";
 import { apiErrorBodySchema, type ApiIssue } from "@/lib/schemas/error";
 
 export class ApiError extends Error {
@@ -31,6 +32,13 @@ function parseError(status: number, body: unknown): ApiError {
   return new ApiError(status, code, message);
 }
 
+/** Host routes carry the stored host key (the backend only checks it when HOST_KEY is set). */
+function hostHeader(path: string): Record<string, string> {
+  if (!path.startsWith("/api/host/") || typeof window === "undefined") return {};
+  const key = getHostKey();
+  return key ? { "X-Host-Key": key } : {};
+}
+
 /** JSON in/out against the same-origin `/api` rewrite. Throws `ApiError` on non-2xx responses. */
 export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
   const { method = "GET", body, headers, signal } = options;
@@ -40,6 +48,7 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     headers: {
       Accept: "application/json",
       ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+      ...hostHeader(path),
       ...headers,
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,

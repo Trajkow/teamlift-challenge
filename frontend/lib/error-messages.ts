@@ -3,11 +3,11 @@ import { ApiError } from "@/lib/api";
 
 /** Backend error codes -> messages for people. One place, shared by the guest and host pages. */
 const MESSAGES: Record<string, string> = {
-  SLOT_TAKEN: "Someone just booked that time. Please pick another slot.",
-  SLOT_OVERLAP: "That time overlaps a slot you already published.",
-  SLOT_BOOKED: "That slot has a booking. Cancel the booking first.",
-  SLOT_IN_PAST: "That time has already passed.",
-  HOST_KEY_REQUIRED: "Enter the host key to continue.",
+  SLOT_TAKEN: "Someone just booked this slot. Pick another one.",
+  SLOT_OVERLAP: "This overlaps a slot you already published.",
+  SLOT_BOOKED: "This slot has a booking. Cancel the booking first.",
+  SLOT_IN_PAST: "That time has already passed. Pick a later one.",
+  HOST_KEY_REQUIRED: "The host key is missing or wrong. Enter it again.",
   CONCURRENT_MODIFICATION: "That changed at the same time as another request. Please try again.",
   NOT_FOUND: "We could not find that.",
   VALIDATION_FAILED: "Some of the values are not valid.",
