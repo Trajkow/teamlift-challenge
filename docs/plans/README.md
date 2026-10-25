@@ -13,7 +13,7 @@ without any earlier conversation.
 | 0 | [phase-0.md](phase-0.md) | Repo scaffold: git, backend + frontend skeletons, DB | — | ✅ done |
 | 1 | [phase-1.md](phase-1.md) | Backend: slots, bookings, no-double-booking constraints, e2e + concurrency test | 0 | ✅ done |
 | 2 | [phase-2.md](phase-2.md) | Frontend: guest booking page + host page | 0 (API contract below); 1 to test end to end | ✅ done (e2e vs real backend pending merge) |
-| 3 | [phase-3.md](phase-3.md) | Optional extra: AI confirmation message (Gemini free tier) | 1, 2 | ⏳ todo |
+| 3 | [phase-3.md](phase-3.md) | Optional extra: AI confirmation message (Gemini free tier) | 1, 2 | ✅ done (live Gemini call unverified) |
 | 4 | [phase-4.md](phase-4.md) | Deploy: Neon (DB) + Render (API) + Vercel (web) | 1, 2 (3 if done) | ⏳ todo |
 | 5 | [phase-5.md](phase-5.md) | README, final QA, submission email, video script | 4 | ⏳ todo |
 
@@ -83,6 +83,7 @@ Error codes (`{ error, message }`):
 | 409 | `SLOT_TAKEN` | slot already booked |
 | 409 | `SLOT_OVERLAP` | new slot overlaps an existing one |
 | 409 | `SLOT_BOOKED` | deleting a slot that has a booking |
+| 422 | `INVALID_TIME` | slot start time falls in a daylight saving gap |
 | 422 | `SLOT_IN_PAST` | booking or creating a slot in the past |
 | 429 | `RATE_LIMITED` | throttler |
 | 500 | `INTERNAL` | anything else (logged, details never leaked) |

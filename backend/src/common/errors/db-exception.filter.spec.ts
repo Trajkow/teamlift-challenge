@@ -43,6 +43,10 @@ describe('mapError', () => {
     }
   });
 
+  it('gives SLOT_OVERLAP a human message', () => {
+    expect(mapError(wrapped('23P01'))?.body.message).toBe('This slot overlaps one you already published');
+  });
+
   it('maps Prisma P2002 and P2025', () => {
     expect(mapError(prisma('P2002'))).toMatchObject({status: 409, body: {error: 'CONFLICT'}});
     expect(mapError(prisma('P2025'))).toMatchObject({status: 404, body: {error: 'NOT_FOUND'}});
