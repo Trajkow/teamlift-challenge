@@ -1,6 +1,6 @@
 # Phase 4: Deploy
 
-**Status: ⏳ todo** · Depends on: 1, 2 (3 if done) · Unblocks: 5
+**Status: 🚧 in progress (repo prep done; deploy pending user accounts)** · Depends on: 1, 2 (3 if done) · Unblocks: 5
 
 ## Goal
 Put the app on a public link. Reviewers will use it the way a real user would.
@@ -59,4 +59,20 @@ The Accept steps in 4.2, done on the live link.
 - `ci: add backend and frontend checks`
 
 ## Handoff notes
-_(fill in: live URLs, the services' env var names (not values), the cold-start note)_
+- **Done in the repo (4.1, 4.3):** `render.yaml` (root; free plan, root dir `backend`, health check `/api/health`,
+  secrets `sync: false`), `npm run seed` (`backend/scripts/seed-demo.ts`, plain `pg` + luxon, run by Node directly),
+  `npm run db:deploy`, `start:prod` = `node dist/main.js`, `.github/workflows/ci.yml`, `docs/deploy.md` (click-by-click
+  checklist and env var table). **4.2 (real deploy) is not done: it needs the user's Neon, Render and Vercel accounts.**
+- **Build on Render:** `npm ci --include=dev` (Render sets `NODE_ENV=production`, which would skip `prisma` and the Nest
+  CLI), then `prisma generate`, `prisma migrate deploy`, `npm run build`. `TRUST_PROXY=1` was already wired in
+  `configure-app.ts`. `sslmode=require` in the Neon URLs is passed through `PrismaPg` to `pg`; not testable locally
+  (no SSL on the Docker Postgres), so confirm on the first Render deploy.
+- **Seed:** 10 half-hour slots (10:00 and 14:00) on the next 5 weekdays in `APP_TIME_ZONE`, skipping any that overlap,
+  plus one booking by "Ana Petrova" made once. Re-running is a no-op. It uses `pg` directly (no `tsx` installed, and the
+  generated Prisma client can't be loaded by Node's type stripping).
+- **Cold start:** `lib/query-client.tsx` now retries non-4xx errors 8 times with backoff (1, 2, 4, 8 s, then 8 s), about
+  a minute, so the skeleton stays until the backend wakes up. Mutations still don't retry.
+- **Checked locally:** production build + `start:prod` against a throwaway DB, seed twice, frontend `next build` and
+  `next start` with `BACKEND_URL` proxying `/api` (see the report in the commit history of this phase). Throwaway DB dropped.
+- **Still to do by the user:** follow `docs/deploy.md`, then record live URLs here and finish 4.2's Accept steps.
+- Optional keep-warm: a GitHub Actions cron pinging `/api/health` every 10 minutes was not added.
