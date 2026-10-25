@@ -56,7 +56,7 @@ export function HostSlotList({ slots, timeZone }: { slots: HostSlot[]; timeZone:
           <ul className="divide-y divide-hairline overflow-hidden rounded-[22px] bg-card ring-1 ring-border">
             {g.items.map((s) => (
               <li key={s.id} className="flex items-start gap-3 px-4 py-3.5">
-                <div className="w-[4.5rem] shrink-0 tabular-nums">
+                <div className="min-w-[5.25rem] shrink-0 whitespace-nowrap tabular-nums">
                   <p className="text-headline">{formatClock(s.startsAt, timeZone)}</p>
                   <p className="text-footnote text-muted-foreground">{s.durationMinutes} min</p>
                 </div>
