@@ -1,6 +1,6 @@
 # Phase 1: Backend (Slots and Bookings)
 
-**Status: ⏳ todo** · Depends on: 0 · Unblocks: 2 (end to end), 3, 4
+**Status: ✅ done** · Depends on: 0 · Unblocks: 2 (end to end), 3, 4
 
 ## Goal
 Build every route in the API map except the AI one. Postgres guarantees that a slot can't be booked twice and that
@@ -132,4 +132,31 @@ cd backend && npm test && npm run test:e2e
 Auth, email sending, the AI message (Phase 3), recurring rules and editing a slot (delete and re-create instead).
 
 ## Handoff notes
-_(fill in: any change to response shapes, how to seed demo data)_
+- **No route or response shape changed** from the API map. Extras: `GET /api/host/slots?includePast=true|false`
+  accepts only those two values; a malformed (non-UUID) id on any `:id` route gives 404 `NOT_FOUND`; a start time that
+  falls in a DST gap gives 422 `INVALID_TIME` (not in the error table, only reachable on the spring-forward night);
+  booking responses and `POST /api/host/slots` responses follow the types in the README (`HostSlot[]`, with
+  `booking: null`).
+- **Layout:** `src/modules/slots/{slots.controller,slots.service,slots.module,slot-time}.ts`, `dto/*` (zod schemas and
+  `slot.mapper.ts`), `src/common/host-key/host-key.guard.ts`. Rate limit presets in `rate-limit.ts`:
+  `RateLimit.booking()` (10/min) and `RateLimit.hostWrite()` (30/min, env `RATE_LIMIT_HOST_WRITE_PER_MIN`).
+- **Migration:** `prisma/migrations/*_init` enables `btree_gist` and adds `slot_ends_after_start`, `slot_no_overlap`
+  (exclusion) and `booking_name_len`. `booking.confirmation_message` already exists for Phase 3. The test DB is rebuilt
+  with `migrate deploy` in `test/global-setup.ts` (the DB is dropped first, so it matches `migrate reset`).
+- **Tests:** 39 unit tests, 24 e2e tests (`test/slots.e2e-spec.ts`, `test/bookings.concurrency.e2e-spec.ts`; 20 parallel
+  bookings give exactly one 201). `test/helpers/slots.ts` has `uniqueFutureDate()`. Host key and rate limit are
+  toggled per test through `process.env`, because both are read on every request.
+- **Seed demo data** (backend on port 3000; add `-H 'X-Host-Key: $KEY'` if `HOST_KEY` is set):
+  ```bash
+  D=$(date -d "+1 day" +%F)   # on macOS: date -v+1d +%F
+  curl -s -XPOST localhost:3000/api/host/slots -H 'content-type: application/json' \
+    -d "{\"date\":\"$D\",\"startTime\":\"09:00\",\"durationMinutes\":30,\"count\":6}"
+  D=$(date -d "+2 days" +%F)
+  curl -s -XPOST localhost:3000/api/host/slots -H 'content-type: application/json' \
+    -d "{\"date\":\"$D\",\"startTime\":\"13:00\",\"durationMinutes\":45,\"count\":4}"
+  # book the first slot of the list
+  ID=$(curl -s localhost:3000/api/slots | node -pe 'JSON.parse(require("fs").readFileSync(0))[0].id')
+  curl -s -XPOST localhost:3000/api/slots/$ID/bookings -H 'content-type: application/json' \
+    -d '{"name":"Ana Guest","email":"ana@example.com","note":"Career chat"}'
+  ```
+- Starting a second backend while another runs: use `PORT=3055 npm run start:dev`.

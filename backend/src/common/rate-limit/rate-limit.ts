@@ -6,7 +6,8 @@ import {AppError} from '../errors/app-error.js';
  * Rate limiting (@nestjs/throttler, in-memory store, single instance). Counters are per route and client IP.
  *
  * Every limit is per minute and read from the environment on each request, so tests and operators can change it:
- *   RATE_LIMIT_ENABLED (default true), RATE_LIMIT_DEFAULT_PER_MIN (120), RATE_LIMIT_BOOKING_PER_MIN (10).
+ *   RATE_LIMIT_ENABLED (default true), RATE_LIMIT_DEFAULT_PER_MIN (120), RATE_LIMIT_BOOKING_PER_MIN (10),
+ *   RATE_LIMIT_HOST_WRITE_PER_MIN (30).
  */
 
 const WINDOW_MS = 60_000;
@@ -33,6 +34,8 @@ const perMinute = (envName: string, fallback: number) => ({
 export const RateLimit = {
   /** Creating a booking: 10 per minute per client IP. */
   booking: () => Throttle({default: perMinute('RATE_LIMIT_BOOKING_PER_MIN', 10)}),
+  /** Host writes (create or delete slots, cancel bookings): 30 per minute per client IP. */
+  hostWrite: () => Throttle({default: perMinute('RATE_LIMIT_HOST_WRITE_PER_MIN', 30)}),
 };
 
 @Injectable()
