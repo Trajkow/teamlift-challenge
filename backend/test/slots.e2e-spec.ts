@@ -54,6 +54,7 @@ describe('creating slots', () => {
     const res = await createSlot({date, startTime: '10:30', durationMinutes: 60});
     expect(res.status).toBe(409);
     expect(res.body.error).toBe('SLOT_OVERLAP');
+    expect(res.body.message).toBe('This slot overlaps one you already published');
   });
 
   it('allows touching slots (end == next start)', async () => {
@@ -233,5 +234,32 @@ describe('rate limits', () => {
       process.env.RATE_LIMIT_ENABLED = 'false';
       delete process.env.RATE_LIMIT_BOOKING_PER_MIN;
     }
+  });
+});
+
+describe('confirmation message', () => {
+  const confirm = (id: string) => t.http.post(`/api/bookings/${id}/confirmation-message`);
+
+  it('falls back to the template (200) when no Gemini key is set', async () => {
+    const slot = await newSlot();
+    const booking = (await book(slot.id, {name: 'Ana', email: 'ana@example.com'})).body;
+    const res = await confirm(booking.id);
+    expect(res.status).toBe(200);
+    expect(res.body.source).toBe('template');
+    expect(res.body.message).toContain('Ana');
+  });
+
+  it('returns a stored AI message with source ai', async () => {
+    const slot = await newSlot();
+    const booking = (await book(slot.id)).body;
+    await prisma.booking.update({where: {id: booking.id}, data: {confirmationMessage: 'See you soon, Ana!'}});
+    const res = await confirm(booking.id);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({message: 'See you soon, Ana!', source: 'ai'});
+  });
+
+  it('404s for unknown or malformed booking ids', async () => {
+    expect((await confirm(randomUUID())).status).toBe(404);
+    expect((await confirm('nope')).status).toBe(404);
   });
 });
