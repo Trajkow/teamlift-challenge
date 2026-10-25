@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dist-e2e/
+.next/
+.next-e2e/
+.env
+.env.*.local
+*.tsbuildinfo
+test-results/
+playwright-report/
+.idea/
+CLAUDE.local.md
