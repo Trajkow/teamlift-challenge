@@ -1,6 +1,6 @@
 # Phase 0: Repo Scaffold
 
-**Status: ⏳ todo** · Depends on: — · Unblocks: 1, 2
+**Status: ✅ done** · Depends on: — · Unblocks: 1, 2
 
 ## Goal
 Get a git repo with a backend that boots against its own Postgres and a frontend that renders, with the shared
@@ -117,4 +117,38 @@ cd ../frontend && npm run lint && npm run typecheck && npm run build
 Models, routes and UI flows (Phases 1 and 2).
 
 ## Handoff notes
-_(fill in)_
+- **Postgres:** `npm run db:up` (also run by `prestart:dev`) starts container `slot_db` on port 5433 and waits for the
+  healthcheck. `backend/.env` is a copy of `.env.example` (git-ignored). `.env.test` points at `slot_test` on the same
+  server; `test/global-setup.ts` drops and recreates it, then runs `prisma migrate deploy`, and refuses any other DB name.
+- **Prisma:** `prisma/schema.prisma` has no models yet. The generated client lives in `src/generated/prisma/` and is
+  git-ignored, so run `npm run db:generate` after a fresh clone and after schema edits (deploys must run it too, e.g. in
+  the build command). `db:migrate` needs at least one model before it creates a migration. Phase 1 adds models and the
+  raw-SQL constraints in the migration.
+- **Backend helpers:** `src/common/errors/{app-error,db-exception.filter,error-codes,unique-violation}.ts`
+  (`mapError` is exported and unit tested; `23P01` maps to `SLOT_OVERLAP`, `23505`/`P2002` to `CONFLICT`, and the
+  deadlock codes to `CONCURRENT_MODIFICATION`; Phase 1 should map `23505` on `booking.slot_id` to `SLOT_TAKEN` in the
+  service by catching it with `isUniqueViolation`). `src/common/validation/zod-validation.pipe.ts`,
+  `src/common/rate-limit/rate-limit.ts` (global `AppThrottlerGuard` is registered; use `@RateLimit.booking()` on the
+  booking route; env `RATE_LIMIT_ENABLED`, `RATE_LIMIT_DEFAULT_PER_MIN`, `RATE_LIMIT_BOOKING_PER_MIN`,
+  `TRUST_PROXY`), `src/configure-app.ts` (prefix `api`, 100kb JSON limit, CORS, trust proxy).
+- **Throttler guard** is tracker = client IP (the base ThrottlerGuard default). Phase 1.6's host key guard is not
+  written yet; add it as a new guard, not in `app.module.ts` globals unless it checks the `/api/host` prefix.
+- **E2E harness:** `test/helpers/app.ts` `createTestApp()` returns `{ app, server, http }`; env is loaded from
+  `.env.test.local` then `.env.test` by `test/helpers/setup-env.ts`. There are no e2e specs yet, and the e2e config
+  includes `**/*.e2e-spec.ts`.
+- **ESM quirk:** backend relative imports end in `.js`; Prisma is imported from `src/generated/prisma/client.js`.
+  `tsconfig.json` has no `rootDir`, so `tsc --noEmit -p tsconfig.json` also type-checks `test/`.
+- **Frontend:** `package-lock.json` is committed because `@hookform/resolvers@6` has an optional peer conflict that
+  fails a lockless `npm install` with ERESOLVE; keep using `npm install` with the lock (CI should use `npm ci`).
+  `.env.local` (git-ignored) was copied from `.env.example`.
+- **Frontend files:** `lib/api.ts` (`apiFetch`, `ApiError`, no credentials/idempotency), `lib/schemas/error.ts`
+  (error body schema), `lib/time.ts` (`formatInstant`, `formatDate`, `formatClock`, `todayIn`, `zonedParts`, plus
+  `zonedTimeToInstant`, `addDays`, `startOfWeek`), `lib/forms.ts` (`applyIssues`), `lib/error-messages.ts`
+  (`MESSAGES` already has the Slot error codes; add new ones there), `lib/query-client.tsx` (`Providers`: theme, query
+  client, Toaster), `lib/use-now.ts`. `components/status-badge.tsx` takes `booked: boolean`.
+  `components/ui/` holds the full set, including dropdown-menu, tabs, checkbox, switch and table.
+- **Layout:** the nav capsule (`components/app-nav.tsx`) shows Book / Host and a theme menu; the mobile tab bar has
+  the same two tabs. `app/page.tsx` is a placeholder (health badge) that Phase 2 replaces; there is no `/host` route
+  yet. Layout page padding at the bottom is `--page-pad-bottom`; floating bars use the geometry variables in
+  `globals.css`.
+- `docs/design-system.md` was trimmed to this app. `README.md` is a stub for Phase 5.
