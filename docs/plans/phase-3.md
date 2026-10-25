@@ -1,6 +1,6 @@
 # Phase 3: Optional Extra (AI Confirmation Message)
 
-**Status: ⏳ todo** · Depends on: 1, 2 · Unblocks: 4
+**Status: ✅ done** · Depends on: 1, 2 · Unblocks: 4
 
 ## Goal
 After a booking, the guest sees a short, friendly confirmation that an LLM writes for them, along the lines of "See
@@ -68,4 +68,19 @@ Manual checks:
 Sending the message by email, and streaming.
 
 ## Handoff notes
-_(fill in: the model used, average latency)_
+- **Built:** `backend/src/modules/ai/` (`prompt.ts`, `confirmation-message.service.ts`, `ai.module.ts`), endpoint
+  `POST /api/bookings/:id/confirmation-message` (`BookingsController` in `slots.controller.ts`, logic in
+  `SlotsService.confirmationMessage`), rate limit 10/min (`RateLimit.confirmation()`, env
+  `RATE_LIMIT_CONFIRMATION_PER_MIN`). Frontend: `useConfirmationMessage` hook, quote card with skeleton and a
+  "Written by AI" caption in `booking-success.tsx`. If the request errors, the card is simply hidden.
+- **Behaviour:** the first successful AI text is stored in `booking.confirmation_message` (first write wins) and
+  later calls return it with `source: 'ai'`. Any failure (no key, error, 5 s timeout, empty output) returns the
+  template with `source: 'template'` and stores nothing. Output is stripped of markdown and links, capped at 300 chars.
+- **Model:** `GEMINI_MODEL`, default `gemini-flash-latest` (the alias used in the SDK docs). **Unverified:** no API
+  key was available, so neither the model name nor a live call was checked, and average latency is unknown. Add
+  `GEMINI_API_KEY` to `backend/.env`, book a slot and check the message says `source: 'ai'`. If the alias is
+  rejected, set `GEMINI_MODEL` to a current free-tier Flash model from AI Studio. Mention the model in the README (Phase 5).
+- **Verified:** unit tests with a mocked client (success, no key, error, empty, timeout), prompt spec, e2e for the
+  template fallback, stored-message path and 404, and a live backend on port 3200 returning the template.
+- **Polish:** `SLOT_OVERLAP` now has a human message; the host time column no longer wraps; `INVALID_TIME` is in the
+  error table and has a friendly frontend message.
