@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, Loader2Icon } from "lucide-react";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -50,14 +50,13 @@ export function CreateSlotsForm({ timeZone }: { timeZone: string }) {
     handleSubmit,
     setError,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<CreateSlotsInput>({
     resolver: zodResolver(createSlotsSchema),
     defaultValues: { date: today, startTime: "10:00", durationMinutes: 30, count: 1 },
   });
   const pending = isSubmitting || create.isPending;
-  const [startTime, duration, count] = watch(["startTime", "durationMinutes", "count"]);
+  const [startTime, duration, count] = useWatch({ control, name: ["startTime", "durationMinutes", "count"] });
   const preview = previewTimes(startTime, duration, Number(count));
 
   async function onSubmit(values: CreateSlotsInput) {

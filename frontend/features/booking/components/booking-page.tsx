@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/page-header";
 import { PageSkeleton } from "@/components/page-skeleton";
 import { Button } from "@/components/ui/button";
 import { useAppConfig } from "@/features/config/hooks";
-import type { BookingConfirmation, PublicSlot } from "@/lib/schemas/slots";
+import type { BookingConfirmation } from "@/lib/schemas/slots";
 import { formatClock, formatDate, zonedParts } from "@/lib/time";
 import { useSlots } from "../hooks";
 import { BookingDialog } from "./booking-dialog";
