@@ -4,10 +4,11 @@ import {ThrottlerModule} from '@nestjs/throttler';
 import {DbExceptionFilter} from './common/errors/db-exception.filter.js';
 import {HealthController} from './common/health/health.controller.js';
 import {AppThrottlerGuard, throttlerOptions} from './common/rate-limit/rate-limit.js';
+import {SlotsModule} from './modules/slots/slots.module.js';
 import {PrismaModule} from './prisma/prisma.module.js';
 
 @Module({
-  imports: [ThrottlerModule.forRoot(throttlerOptions), PrismaModule],
+  imports: [ThrottlerModule.forRoot(throttlerOptions), PrismaModule, SlotsModule],
   controllers: [HealthController],
   providers: [
     {provide: APP_GUARD, useClass: AppThrottlerGuard},
