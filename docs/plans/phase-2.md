@@ -1,6 +1,6 @@
 # Phase 2: Frontend (Guest Booking + Host Page)
 
-**Status: ⏳ todo** · Depends on: 0 (API contract in README); 1 for end-to-end checks · Unblocks: 3, 4
+**Status: ✅ done** (end-to-end checks against the real backend are pending the merge with Phase 1) · Depends on: 0 (API contract in README); 1 for end-to-end checks · Unblocks: 3, 4
 
 ## Goal
 Build a clean, calm UI that reviewers can use end to end in under a minute:
@@ -99,4 +99,16 @@ Manual check, with the backend running: run through the Accept steps in 2.3 at d
 Auth, editing slots, multiple hosts, a calendar grid view.
 
 ## Handoff notes
-_(fill in: where Phase 3 should mount the AI message)_
+- **Phase 3 mount point:** `frontend/features/booking/components/booking-success.tsx`. A comment marks the spot
+  between the booking summary and the "Add to calendar" / "Book another" buttons. The component receives the
+  `BookingConfirmation` (`booking.id` is what `POST /api/bookings/:id/confirmation-message` needs). Add a
+  `features/booking/api.ts` call and hook there.
+- **Files:** `lib/schemas/slots.ts` (zod DTO mirrors + API types), `lib/host-key.ts` (`apiFetch` adds `X-Host-Key` on
+  `/api/host/*`), `lib/ics.ts`, `lib/group-by-day.ts`, `components/day-header.tsx`, `features/config`,
+  `features/booking` (`booking-page`, `slot-list`, `booking-dialog`, `booking-success`), `features/host`
+  (`host-page`, `create-slots-form`, `host-slot-list`, `host-key-card`), routes `app/page.tsx` and `app/host/page.tsx`.
+- **Verified:** `npm run typecheck` passes. Guest and host pages were exercised in a browser against a throwaway local
+  mock (not committed): list, booked pills, booking form validation, success screen, host list and preview.
+- **Not verified (needs the real backend):** the Accept steps in 2.3 end to end (create, book, cancel, overlap toast),
+  the `SLOT_TAKEN` race, host key flow, and a 375 px visual pass in both themes.
+- Backend shape assumed exactly as the API map: `DELETE` calls return 204 with no body (`apiFetch` returns undefined).

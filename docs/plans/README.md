@@ -12,7 +12,7 @@ without any earlier conversation.
 |-------|------|-------|------------|--------|
 | 0 | [phase-0.md](phase-0.md) | Repo scaffold: git, backend + frontend skeletons, DB | — | ✅ done |
 | 1 | [phase-1.md](phase-1.md) | Backend: slots, bookings, no-double-booking constraints, e2e + concurrency test | 0 | ⏳ todo |
-| 2 | [phase-2.md](phase-2.md) | Frontend: guest booking page + host page | 0 (API contract below); 1 to test end to end | ⏳ todo |
+| 2 | [phase-2.md](phase-2.md) | Frontend: guest booking page + host page | 0 (API contract below); 1 to test end to end | ✅ done (e2e vs real backend pending merge) |
 | 3 | [phase-3.md](phase-3.md) | Optional extra: AI confirmation message (Gemini free tier) | 1, 2 | ⏳ todo |
 | 4 | [phase-4.md](phase-4.md) | Deploy: Neon (DB) + Render (API) + Vercel (web) | 1, 2 (3 if done) | ⏳ todo |
 | 5 | [phase-5.md](phase-5.md) | README, final QA, submission email, video script | 4 | ⏳ todo |

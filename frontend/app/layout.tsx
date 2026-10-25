@@ -5,7 +5,7 @@ import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { Providers } from "@/lib/query-client";
 
 export const metadata: Metadata = {
-  title: "Slot",
+  title: { default: "Slot", template: "%s · Slot" },
   description: "Pick a time and book it in seconds. One slot, one guest, never double booked.",
 };
 
