@@ -3,6 +3,8 @@ import {randomUUID} from 'node:crypto';
 import {AppError} from '../../common/errors/app-error.js';
 import {collectCodes} from '../../common/errors/error-codes.js';
 import {isUniqueViolation} from '../../common/errors/unique-violation.js';
+import {ConfirmationMessageService} from '../ai/confirmation-message.service.js';
+import {templateMessage} from '../ai/prompt.js';
 import {PrismaService} from '../../prisma/prisma.service.js';
 import type {CreateBookingDto} from './dto/create-booking.dto.js';
 import type {CreateSlotsDto} from './dto/create-slots.dto.js';
@@ -25,7 +27,10 @@ const notFound = (what: string) => new AppError(404, 'NOT_FOUND', `${what} not f
 
 @Injectable()
 export class SlotsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ai: ConfirmationMessageService,
+  ) {}
 
   config() {
     return {
@@ -126,5 +131,28 @@ export class SlotsService {
     if (!UUID_RE.test(id)) throw notFound('Booking');
     const {count} = await this.prisma.booking.deleteMany({where: {id}});
     if (count === 0) throw notFound('Booking');
+  }
+
+  /** AI confirmation text for a booking, generated once and stored; falls back to a template. Never fails because of the LLM. */
+  async confirmationMessage(id: string): Promise<{message: string; source: 'ai' | 'template'}> {
+    if (!UUID_RE.test(id)) throw notFound('Booking');
+    const booking = await this.prisma.booking.findUnique({where: {id}, include: {slot: true}});
+    if (!booking) throw notFound('Booking');
+    if (booking.confirmationMessage) return {message: booking.confirmationMessage, source: 'ai'};
+    const timeZone = appTimeZone();
+    const startsAt = booking.slot.startsAt;
+    const generated = await this.ai.generate({
+      name: booking.name,
+      startsAt,
+      durationMinutes: Math.round((booking.slot.endsAt.getTime() - startsAt.getTime()) / 60_000),
+      note: booking.note,
+      timeZone,
+      hostName: process.env.HOST_NAME || null,
+    });
+    if (!generated) return {message: templateMessage({name: booking.name, startsAt, timeZone}), source: 'template'};
+    // Keep the first stored message if two requests raced.
+    await this.prisma.booking.updateMany({where: {id, confirmationMessage: null}, data: {confirmationMessage: generated}});
+    const stored = await this.prisma.booking.findUnique({where: {id}, select: {confirmationMessage: true}});
+    return {message: stored?.confirmationMessage ?? generated, source: 'ai'};
   }
 }

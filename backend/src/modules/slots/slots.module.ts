@@ -1,9 +1,11 @@
 import {Module} from '@nestjs/common';
-import {HostSlotsController, PublicSlotsController} from './slots.controller.js';
+import {AiModule} from '../ai/ai.module.js';
+import {BookingsController, HostSlotsController, PublicSlotsController} from './slots.controller.js';
 import {SlotsService} from './slots.service.js';
 
 @Module({
-  controllers: [PublicSlotsController, HostSlotsController],
+  imports: [AiModule],
+  controllers: [BookingsController, PublicSlotsController, HostSlotsController],
   providers: [SlotsService],
 })
 export class SlotsModule {}

@@ -4,8 +4,8 @@ import {collectCodes, isTransientTxError} from './error-codes.js';
 
 export type ErrorBody = {error: string; message: string; [k: string]: unknown};
 
-const PG_CODES: Record<string, {status: number; error: string}> = {
-  '23P01': {status: 409, error: 'SLOT_OVERLAP'},
+const PG_CODES: Record<string, {status: number; error: string; message?: string}> = {
+  '23P01': {status: 409, error: 'SLOT_OVERLAP', message: 'This slot overlaps one you already published'},
   '23505': {status: 409, error: 'CONFLICT'},
   '23514': {status: 422, error: 'INVALID_STATE'},
   '23503': {status: 422, error: 'INVALID_REFERENCE'},
@@ -60,7 +60,7 @@ export function mapError(exception: unknown): {status: number; body: ErrorBody} 
   const codes = collectCodes(exception);
   for (const code of codes) {
     const hit = PG_CODES[code];
-    if (hit) return {status: hit.status, body: {error: hit.error, message: hit.error}};
+    if (hit) return {status: hit.status, body: {error: hit.error, message: hit.message ?? hit.error}};
   }
   for (const code of codes) {
     const hit = PRISMA_CODES[code];

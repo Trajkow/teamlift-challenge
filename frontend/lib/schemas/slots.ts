@@ -32,4 +32,6 @@ export type HostSlot = PublicSlot & {
 
 export type BookingConfirmation = { id: string; slot: PublicSlot; name: string; createdAt: string };
 
+export type ConfirmationMessage = { message: string; source: "ai" | "template" };
+
 export type AppConfig = { timeZone: string; hostName: string; hostKeyRequired: boolean };

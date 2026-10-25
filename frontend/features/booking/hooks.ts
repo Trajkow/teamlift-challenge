@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createBooking, getSlots } from "./api";
+import { createBooking, getConfirmationMessage, getSlots } from "./api";
 
 /** Open and booked future slots. Polls so another guest's booking shows up without a reload. */
 export function useSlots() {
@@ -27,4 +27,9 @@ export function useBook() {
       qc.invalidateQueries({ queryKey: ["host-slots"] });
     },
   });
+}
+
+/** Fetches the confirmation message once for a booking (fired from an effect on the success screen). */
+export function useConfirmationMessage() {
+  return useMutation({ mutationFn: (bookingId: string) => getConfirmationMessage(bookingId) });
 }

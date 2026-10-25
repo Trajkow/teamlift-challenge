@@ -33,6 +33,18 @@ export class PublicSlotsController {
   }
 }
 
+@Controller('bookings')
+export class BookingsController {
+  constructor(private readonly slots: SlotsService) {}
+
+  @Post(':id/confirmation-message')
+  @HttpCode(200)
+  @RateLimit.confirmation()
+  confirmationMessage(@Param('id') id: string) {
+    return this.slots.confirmationMessage(id);
+  }
+}
+
 @Controller('host')
 @UseGuards(HostKeyGuard)
 export class HostSlotsController {
