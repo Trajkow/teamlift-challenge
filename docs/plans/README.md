@@ -33,7 +33,7 @@ Status values: `⏳ todo`, `🚧 in progress (agent)`, `✅ done`, `⛔ blocked 
 | Topic | Decision |
 |---|---|
 | Theme ("make it your own") | **Coffee chat / office hours with one host.** The app is called "Slot". Change the copy in Phase 2 if the author picks something else. |
-| Accounts | None, as the brief says. Host pages live at `/host`. Optional `HOST_KEY`: if it's set, `/api/host/*` and slot writes need the `X-Host-Key` header (Phase 1.6). |
+| Accounts | None, as the brief says. Host pages live at `/host`. Optional `HOST_KEY` (off on the live demo): if it's set, `/api/host/*` needs the `X-Host-Key` header. |
 | Time zone | One zone, `APP_TIME_ZONE` (default `Europe/Skopje`), shown in the UI ("All times in Skopje time"). |
 | Double booking | `UNIQUE (booking.slot_id)`. The database rejects the second insert, and the API maps that to 409 `SLOT_TAKEN`. Covered by a parallel-request e2e test. |
 | Overlapping slots | Exclusion constraint `EXCLUDE USING gist (tstzrange(starts_at, ends_at, '[)') WITH &&)`, mapped to 409 `SLOT_OVERLAP`. |

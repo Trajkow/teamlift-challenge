@@ -24,8 +24,9 @@ Put the app on a public link. Reviewers will use it the way a real user would.
 - **Cold starts:** Render free instances sleep, and the first request can take about 30 to 50 s. The frontend
   `ErrorState` and skeleton must handle a slow first load gracefully. Add a one-line note to the README. Optionally,
   a GitHub Actions cron can ping `/api/health` every 10 minutes during the review week.
-- **Host key in production:** set `HOST_KEY` on Render so random visitors can't wipe the slots, and put the key in the
-  README and the submission email for reviewers. **Ask the user** whether they want this.
+- **Host key in production: off** (decided by the user). Leave `HOST_KEY` unset on Render so reviewers can use
+  `/host` without friction. The demo data is disposable, the rate limits cap abuse, and `npm run seed` restores the
+  slots. The README's "Choices I made" says the key can be switched on with one env var.
 
 ## Tasks
 
