@@ -60,6 +60,11 @@ Use **Host** (publishes slots), **Guest** (books), **Slot**, **Booking**. Never 
   Prisma, `pg`, zod, luxon, `@nestjs/throttler`, vitest, supertest, oxlint; Next, React, shadcn and its deps,
   TanStack Query, react-hook-form, `@hookform/resolvers`, sonner, lucide-react, next-themes), plus `@google/genai`
   (Phase 3).
+- **Don't run `npm run lint` or `npm run build` while working.** Use `npm test`, `npm run test:e2e` and
+  `npm run typecheck` instead. Lint and build run **only when a phase branch is merged** into `main` (see the merge
+  step in `docs/plans/README.md`).
+- Each phase is done on its own branch (`phase-<n>`), usually in its own git worktree, and merged into `main` when
+  it's finished.
 - Commits are single-line conventional commits (`feat(slots): add booking endpoint`).
 - Never commit secrets: `.env` is git-ignored, and `.env.example` holds placeholders only.
 - Keep scope tight. A working, polished flow beats extra features.

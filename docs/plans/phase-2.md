@@ -85,7 +85,7 @@ add features.
 
 ## Verification
 ```bash
-cd frontend && npm run lint && npm run typecheck && npm run build
+cd frontend && npm run typecheck
 ```
 Manual check, with the backend running: run through the Accept steps in 2.3 at desktop and phone width.
 

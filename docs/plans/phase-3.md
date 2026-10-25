@@ -53,8 +53,8 @@ as the brief suggests.
 
 ## Verification
 ```bash
-cd backend && npm run lint && npm test && npm run test:e2e
-cd ../frontend && npm run lint && npm run typecheck && npm run build
+cd backend && npm test && npm run test:e2e
+cd ../frontend && npm run typecheck
 ```
 Manual checks:
 - with a real key, book a slot and see the AI message;

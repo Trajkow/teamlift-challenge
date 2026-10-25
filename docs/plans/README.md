@@ -93,7 +93,8 @@ Error codes (`{ error, message }`):
 2. **Before starting:** check that dependencies are `✅ done` (Phase 2 needs only Phase 0). Set your phase to
    `🚧 in progress`.
 3. **Work task by task.** Each task lists files, steps and an **Accept** check. Don't skip the checks.
-4. **Verify:** every command in the phase's Verification block must pass.
+4. **Verify:** every command in the phase's Verification block must pass. **Don't run `npm run lint` or
+   `npm run build`**; those run only at merge (step 8).
 5. **Commit** with the suggested messages.
 6. **Finish:** set the status to `✅ done`, fill in **Handoff notes**, and update the API map if anything changed.
 7. **Stop and ask the user** when:
@@ -101,3 +102,6 @@ Error codes (`{ error, message }`):
    - you would have to change a route or response shape that another phase depends on;
    - you need an account, a secret or a dashboard action (Neon, Render, Vercel, Google AI Studio);
    - you would have to loosen a database constraint.
+8. **Merge (done by the orchestrator, not the phase agent):** on the phase branch, run
+   `cd backend && npm run lint && npm run build` and `cd frontend && npm run lint && npm run build`. Fix any failures
+   on the branch, then merge into `main` with `git merge --no-ff phase-<n>`. This is the only time lint and build run.

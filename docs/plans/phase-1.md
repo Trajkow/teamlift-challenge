@@ -119,7 +119,7 @@ model Booking {
 
 ## Verification
 ```bash
-cd backend && npm run lint && npm test && npm run test:e2e && npm run build
+cd backend && npm test && npm run test:e2e
 ```
 
 ## Commits
