@@ -30,3 +30,14 @@ model Booking {
 
   @@map("booking")
 }
+
+/// The host's Google Calendar connection (Phase 7). A single row; the refresh token is stored encrypted.
+model CalendarConnection {
+  id                    String   @id @default("host")
+  email                 String
+  refreshTokenEncrypted String   @map("refresh_token_encrypted")
+  needsReconnect        Boolean  @default(false) @map("needs_reconnect")
+  connectedAt           DateTime @default(now()) @map("connected_at") @db.Timestamptz
+
+  @@map("calendar_connection")
+}
