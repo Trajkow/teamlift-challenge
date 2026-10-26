@@ -1,10 +1,11 @@
 "use client";
 
-import { CalendarCheck2Icon } from "lucide-react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { ErrorState } from "@/components/error-state";
 import { PageHeader } from "@/components/page-header";
 import { PageSkeleton } from "@/components/page-skeleton";
+import { CalendarCard } from "@/features/calendar/components/calendar-card";
+import { CalendarReturnToast } from "@/features/calendar/components/calendar-return-toast";
 import { useAppConfig } from "@/features/config/hooks";
 import { isApiError } from "@/lib/error-messages";
 import { getHostKey, setHostKey } from "@/lib/host-key";
@@ -21,19 +22,8 @@ export function HostPage() {
   const slots = useHostSlots(!!config.data && !needsKey);
   const keyRejected = isApiError(slots.error, "HOST_KEY_REQUIRED");
 
-  const calendarPill = config.data ? (
-    <span
-      className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-footnote font-medium ${config.data.calendarConnected ? "bg-success-bg text-success" : "bg-muted text-muted-foreground"}`}
-    >
-      <CalendarCheck2Icon className="size-3.5" aria-hidden />
-      {config.data.calendarConnected ? "Google Calendar connected" : "Calendar not connected"}
-    </span>
-  ) : null;
   const header = (
-    <div className="flex flex-col gap-3">
-      <PageHeader title="Host" description={config.data ? `Publish slots and see who booked them. All times in ${config.data.timeZone} time.` : "Publish slots and see who booked them."} />
-      {calendarPill}
-    </div>
+    <PageHeader title="Host" description={config.data ? `Publish slots and see who booked them. All times in ${config.data.timeZone} time.` : "Publish slots and see who booked them."} />
   );
 
   if (config.isError) {
@@ -71,6 +61,10 @@ export function HostPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       {header}
+      <Suspense fallback={null}>
+        <CalendarReturnToast />
+      </Suspense>
+      <CalendarCard hostKey={key} />
       <CreateSlotsForm timeZone={config.data.timeZone} />
       {slots.isError ? (
         <ErrorState error={slots.error} title="Could not load your slots" onRetry={() => slots.refetch()} />
