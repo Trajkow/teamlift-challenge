@@ -1,6 +1,6 @@
 # Phase 7: Host Connects Google Calendar (OAuth)
 
-**Status: ⏳ todo** · Depends on: 6 · Unblocks: 5
+**Status: ✅ done (live OAuth unverified)** · Depends on: 6 · Unblocks: 5
 
 ## Goal
 Add a **"Connect Google Calendar"** button on `/host`. The host signs in with Google, and from then on every guest
@@ -148,4 +148,37 @@ Live check after the user's setup:
 Per-guest calendars, choosing a calendar other than `primary`, writing events, Google app verification.
 
 ## Handoff notes
-_(fill in)_
+- **Built (backend, `src/modules/calendar/`):** `token-crypto.ts` (AES-256-GCM, `iv:tag:ciphertext` base64, key =
+  `CALENDAR_TOKEN_KEY`), `oauth-state.store.ts` (random single-use `state`, 10 min TTL, capped at 1000 pending),
+  `oauth.provider.ts` (`OAUTH_PROVIDER` token, `OAuthProvider` type, `GoogleOAuthProvider` = the only code that calls
+  Google: `generateAuthUrl`, `getToken`, `verifyIdToken` for the email, `getAccessToken`, `revokeToken`;
+  `InvalidGrantError`), `oauth-calendar.client.ts` (`CalendarClient` for `primary`, in-memory access token, calls
+  `onInvalidGrant`), `calendar-client.resolver.ts` (per request: OAuth row, else service account, else none),
+  `calendar-connection.service.ts`, `host-calendar.controller.ts` (4 routes), shared `fetchFreeBusy` in
+  `google-calendar.client.ts`. Table `calendar_connection` (migration `calendar_connection`).
+- **Behaviour:** `CalendarBusyService` now asks the resolver on every call (`isConnected()` is async; `/api/config`
+  `calendarConnected` is true when a usable client exists). Connect/disconnect/reconnect clear the 60 s busy cache and
+  the cached OAuth client. A row with `needsReconnect` (set on `invalid_grant`, or if the token can't be decrypted)
+  resolves to no client and does not fall back to the service account, so slots show as not busy and `/host` shows
+  Reconnect. The callback never throws: bad or reused `state`, Google's `error` param, a failed exchange, or no
+  refresh token all redirect to the fixed path `/host?calendar=error` (Google's text is never read or echoed).
+  Connect with OAuth unset also redirects to `/host?calendar=error`. `oauthAvailable` needs the three Google vars
+  **and** a valid 32-byte `CALENDAR_TOKEN_KEY`. `HostKeyQueryGuard` (connect only) reads `?hostKey=`; status and
+  disconnect use the header guard. Rate limit: host-write (30/min) on connect, callback and disconnect.
+- **Security:** tokens, codes, the secret and the key are never logged or returned (only error class names are
+  logged). The e2e checks the raw DB column is not the plaintext and decrypts back to it.
+- **Frontend:** `features/calendar/{api,hooks}.ts`, `components/calendar-card.tsx` (not connected, connected,
+  needs reconnect, service account only, OAuth unavailable; Disconnect through `ConfirmDialog`; plain `<a>` to
+  `/api/host/calendar/connect`, with `?hostKey=` when a key is stored), `calendar-return-toast.tsx`
+  (`useSearchParams` in `<Suspense>`, toast, `router.replace`). The Phase 6 header pill is gone. After connect or
+  disconnect the `calendar`, `config`, `slots` and `host-slots` queries are invalidated. The card is hidden if the
+  status request fails.
+- **Tests:** unit specs for crypto (round trip, tampering), state store, resolver priority, `needsReconnect` on
+  `invalid_grant`, cache clearing; `test/calendar-oauth.e2e-spec.ts` with a fake `OAUTH_PROVIDER` and a stubbed
+  `fetch` that refuses any non-freeBusy URL. No test touches Google.
+- **Unverified:** the live OAuth flow (consent URL, code exchange, id token email, refresh, revoke, freeBusy with a
+  user token) and the new card in a browser. Needs the user's OAuth client; follow "Connect Google Calendar (OAuth)"
+  in `docs/deploy.md`.
+- **Known limits:** `state` lives in memory (one backend instance; a Render restart mid-consent gives
+  `calendar=error`, just retry). Revoking a replaced connection's old token is not attempted. The relative redirect
+  `/host?...` relies on the Vercel/Next proxy passing the 302 through unchanged.

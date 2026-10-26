@@ -33,4 +33,12 @@ services:
         sync: false
       - key: GOOGLE_SERVICE_ACCOUNT_JSON # optional, service account key as raw JSON or base64
         sync: false
+      - key: GOOGLE_OAUTH_CLIENT_ID # optional, host Google Calendar sign-in; all four OAuth vars are needed
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_OAUTH_REDIRECT_URI # https://<vercel-domain>/api/host/calendar/callback
+        sync: false
+      - key: CALENDAR_TOKEN_KEY # openssl rand -base64 32; encrypts the stored refresh token
+        sync: false
       # HOST_KEY is intentionally not set in production.

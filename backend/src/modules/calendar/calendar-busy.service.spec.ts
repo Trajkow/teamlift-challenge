@@ -39,19 +39,23 @@ describe('parseServiceAccountKey', () => {
   });
 });
 
+const sourceOf = (client: CalendarClient | null) => ({
+  resolve: async () => ({client, source: client ? ('service_account' as const) : null}),
+});
+
 describe('CalendarBusyService', () => {
   const fake = (impl: CalendarClient['freeBusy']) => ({freeBusy: vi.fn(impl)});
 
   it('returns null when no client is configured', async () => {
-    const svc = new CalendarBusyService(null);
-    expect(svc.connected).toBe(false);
+    const svc = new CalendarBusyService(sourceOf(null));
+    expect(await svc.isConnected()).toBe(false);
     expect(await svc.busyIntervals(at(0), at(23))).toBeNull();
   });
 
   it('returns intervals and serves repeats from the cache', async () => {
     const client = fake(async () => busy(at(10), at(11)));
-    const svc = new CalendarBusyService(client);
-    expect(svc.connected).toBe(true);
+    const svc = new CalendarBusyService(sourceOf(client));
+    expect(await svc.isConnected()).toBe(true);
     expect(await svc.busyIntervals(at(0), at(23))).toHaveLength(1);
     await svc.busyIntervals(at(0), at(23));
     expect(client.freeBusy).toHaveBeenCalledTimes(1);
@@ -61,10 +65,19 @@ describe('CalendarBusyService', () => {
     expect(client.freeBusy).toHaveBeenCalledTimes(3);
   });
 
+  it('clearCache forces a new lookup', async () => {
+    const client = fake(async () => []);
+    const svc = new CalendarBusyService(sourceOf(client));
+    await svc.busyIntervals(at(0), at(23));
+    svc.clearCache();
+    await svc.busyIntervals(at(0), at(23));
+    expect(client.freeBusy).toHaveBeenCalledTimes(2);
+  });
+
   it('expires the cache after 60 seconds', async () => {
     vi.useFakeTimers();
     const client = fake(async () => []);
-    const svc = new CalendarBusyService(client);
+    const svc = new CalendarBusyService(sourceOf(client));
     await svc.busyIntervals(at(0), at(23));
     vi.advanceTimersByTime(CALENDAR_CACHE_MS + 1);
     await svc.busyIntervals(at(0), at(23));
@@ -75,7 +88,7 @@ describe('CalendarBusyService', () => {
     const client = fake(async () => {
       throw new Error('freeBusy HTTP 500');
     });
-    const svc = new CalendarBusyService(client);
+    const svc = new CalendarBusyService(sourceOf(client));
     expect(await svc.busyIntervals(at(0), at(23))).toBeNull();
     await svc.busyIntervals(at(0), at(23));
     expect(client.freeBusy).toHaveBeenCalledTimes(2);
@@ -83,7 +96,7 @@ describe('CalendarBusyService', () => {
 
   it('returns null after 3 seconds even if the client ignores the abort signal', async () => {
     vi.useFakeTimers();
-    const svc = new CalendarBusyService(fake(() => new Promise(() => undefined)));
+    const svc = new CalendarBusyService(sourceOf(fake(() => new Promise(() => undefined))));
     const result = svc.busyIntervals(at(0), at(23));
     await vi.advanceTimersByTimeAsync(CALENDAR_TIMEOUT_MS + 1);
     expect(await result).toBeNull();
