@@ -18,6 +18,7 @@ without any earlier conversation.
 | 5 | [phase-5.md](phase-5.md) | README, final QA, submission email, video script | 4, 6, 7 | 🚧 in progress (README done; live URLs + author review pending) |
 | 6 | [phase-6.md](phase-6.md) | Second extra: Google Calendar conflicts (free/busy, marked unavailable) | 1, 2, 3 | ✅ done (live Google call unverified) |
 | 7 | [phase-7.md](phase-7.md) | Host connects Google Calendar on /host (OAuth, encrypted token, service account fallback) | 6 | ✅ done (live OAuth unverified) |
+| 8 | [phase-8.md](phase-8.md) | Split-pill booking: the selected slot expands into "time │ Book →", floating bar removed | 2 | ⏳ todo |
 
 ```
 0 ──► 1 ──┬──► 3 ──► 4 ──► 5
