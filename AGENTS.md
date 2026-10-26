@@ -49,7 +49,7 @@ Frontend (from `frontend/`):
 - Data fetching uses TanStack Query (`features/<feature>/{api,hooks}.ts`). Forms use react-hook-form + `zodResolver`,
   with schemas in `lib/schemas/` that mirror the backend DTOs.
 - Times go through `lib/time.ts` (`formatInstant`, `formatClock`, `todayIn`). Never call `Date.now()` during render
-  (use `useNow()`).
+  (read the time in an effect, an event handler or a `useState` initialiser).
 - Next 16 differs from older versions: read `frontend/node_modules/next/dist/docs/` before using an unfamiliar API.
   `useSearchParams` needs a `<Suspense>` boundary.
 
