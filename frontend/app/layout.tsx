@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AppNav } from "@/components/app-nav";
-import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { Providers } from "@/lib/query-client";
 
 export const metadata: Metadata = {
@@ -25,7 +24,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           />
           <AppNav />
           <main className="mx-auto w-full max-w-6xl min-w-0 flex-1 overflow-x-clip px-4 pt-8 pb-[var(--page-pad-bottom)]">{children}</main>
-          <MobileTabBar />
         </Providers>
       </body>
     </html>

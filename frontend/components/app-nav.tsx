@@ -27,6 +27,7 @@ function NavLink({ href, active, children }: { href: string; active: boolean; ch
       aria-current={active ? "page" : undefined}
       className={cn(
         buttonVariants({ variant: "ghost", size: "sm" }),
+        "max-md:min-h-11",
         active
           ? "glass-selected text-[color:var(--glass-selected-label)] hover:bg-[var(--glass-selected)] hover:text-[color:var(--glass-selected-label)] focus-visible:text-[color:var(--glass-selected-label)]"
           : "text-foreground/70",
@@ -57,8 +58,8 @@ export function AppNav() {
           Slot
         </Link>
 
-        {/* Phones keep the mark and the theme menu; navigation lives in the tab bar. */}
-        <div className="hidden items-center gap-1 md:flex">
+        {/* Book and Host stay in the capsule on every screen size; there is no bottom tab bar. */}
+        <div className="flex items-center gap-1">
           <NavLink href="/" active={pathname === "/"}>
             Book
           </NavLink>

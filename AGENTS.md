@@ -41,10 +41,10 @@ Frontend (from `frontend/`):
 ## Frontend rules
 - Look and feel: Apple-style, system font, neutral greys with one blue accent, pill buttons, large titles, inset
   grouped lists, light and dark themes. **Liquid Glass** (`.glass`, `.glass-thick`) only on the floating layer: the
-  nav capsule, the mobile tab bar, the floating booking bar, dialogs, sheets, menus and popovers. Content (cards,
+  nav capsule (Book and Host links on every screen size; no bottom tab bar), dialogs, sheets, menus and popovers. Content (cards,
   lists, forms, slot pills) stays on solid `bg-card` surfaces. Full guide: `docs/design-system.md`.
 - shadcn/ui for every primitive. Use design tokens (`bg-card`, `text-muted-foreground`, ...), never raw colours.
-  Floating offsets come from the CSS variables in `globals.css` (`--nav-top`, `--float-bottom-tabbar`, ...).
+  Floating offsets come from the CSS variables in `globals.css` (`--nav-top`, `--sticky-top`, `--float-bottom`, ...).
 - API calls go only through `apiFetch<T>()` in `lib/api.ts` (same-origin `/api`, throws `ApiError`).
 - Data fetching uses TanStack Query (`features/<feature>/{api,hooks}.ts`). Forms use react-hook-form + `zodResolver`,
   with schemas in `lib/schemas/` that mirror the backend DTOs.

@@ -1,6 +1,6 @@
 # Phase 8: Split-Pill Booking (Book Button on the Selected Slot)
 
-**Status: ⏳ todo** · Depends on: 2 · Frontend only
+**Status: ✅ done (browser checks unverified)** · Depends on: 2 · Frontend only
 
 ## Goal
 Put the Book action where the guest is already looking. Clicking a free slot expands that pill in place into a split
@@ -78,4 +78,11 @@ Plus the manual checks in 8.3.
 Backend changes, the booking dialog's form, the host page.
 
 ## Handoff notes
-_(fill in)_
+- New `split-slot-pill.tsx`: `col-span-2` pill, time half (`aria-pressed`, duration caption, click deselects) and a
+  solid primary "Book" half. Book focuses on mount and fades/slides in with a CSS transition (`duration-200 ease-out`,
+  covered by the global reduced-motion guard). Escape on either half deselects and refocuses that slot's time button
+  (found through `data-slot-time`).
+- `SlotList` gained `onDeselect` and `onBook`; `BookingPage` wires them and no longer has the floating bar, spacer or
+  `dayLabel`. Dialog, `SLOT_TAKEN`/`SLOT_UNAVAILABLE` handling and the success screen are untouched.
+- Only `npm run typecheck` was run (passes). The 8.3 browser checks (breakpoints, themes, last-column wrap, keyboard
+  flow) were not done: no browser run was set up.
