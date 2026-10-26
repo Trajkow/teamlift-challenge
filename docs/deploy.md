@@ -55,7 +55,7 @@ it shows as Booked; `curl -XPOST https://<vercel>/api/slots/<id>/bookings ...` o
 | Render | `RATE_LIMIT_ENABLED` | prefilled by blueprint (`true`) |
 | Render | `HOST_NAME` | optional, your name for the UI |
 | Render | `GEMINI_API_KEY` | optional, Google AI Studio; without it the template message is used |
-| Render | `GEMINI_MODEL` | optional, a free-tier Flash model name from AI Studio (default `gemini-flash-latest`) |
+| Render | `GEMINI_MODEL` | optional, a free-tier Flash model name from AI Studio (default `gemini-3.5-flash-lite`; leave empty unless Google retires it) |
 | Render | `GOOGLE_CALENDAR_ID` | optional, your calendar's ID (see "Google Calendar with a service account" below) |
 | Render | `GOOGLE_SERVICE_ACCOUNT_JSON` | optional, `base64 -w0 key.json` of the service account key |
 | Render | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` | optional, OAuth client (see "Connect Google Calendar (OAuth)" below) |

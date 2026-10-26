@@ -29,7 +29,23 @@ export function useBook() {
   });
 }
 
-/** Fetches the confirmation message once for a booking (fired from an effect on the success screen). */
-export function useConfirmationMessage() {
-  return useMutation({ mutationFn: (bookingId: string) => getConfirmationMessage(bookingId) });
+const CONFIRMATION_POLL_MS = 3_000;
+/** The backend gives up on the AI after about 40 s and answers with the template; stop polling a bit after that. */
+export const CONFIRMATION_MAX_POLLS = 20;
+
+/** The booking's confirmation message. Polls while the AI is still writing it, then stops. */
+export function useConfirmationMessage(bookingId: string) {
+  const qc = useQueryClient();
+  const queryKey = ["confirmation", bookingId];
+  const query = useQuery({
+    queryKey,
+    queryFn: () => getConfirmationMessage(bookingId),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchInterval: (query) =>
+      query.state.data?.status === "pending" && query.state.dataUpdateCount < CONFIRMATION_MAX_POLLS
+        ? CONFIRMATION_POLL_MS
+        : false,
+  });
+  return { ...query, polls: qc.getQueryState(queryKey)?.dataUpdateCount ?? 0 };
 }

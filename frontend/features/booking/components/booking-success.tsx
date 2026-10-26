@@ -1,13 +1,12 @@
 "use client";
 
 import { CalendarPlusIcon, CircleCheck, Sparkles } from "lucide-react";
-import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { buildIcs, downloadIcs } from "@/lib/ics";
 import type { BookingConfirmation } from "@/lib/schemas/slots";
 import { formatClock, formatInstant } from "@/lib/time";
-import { useConfirmationMessage } from "../hooks";
+import { CONFIRMATION_MAX_POLLS, useConfirmationMessage } from "../hooks";
 
 /** Shown in place of the slot list after a booking. */
 export function BookingSuccess({
@@ -22,14 +21,10 @@ export function BookingSuccess({
   onBookAnother: () => void;
 }) {
   const { slot } = booking;
-  const { mutate, data, isError } = useConfirmationMessage();
-  const requested = useRef(false);
-
-  useEffect(() => {
-    if (requested.current) return;
-    requested.current = true;
-    mutate(booking.id);
-  }, [booking.id, mutate]);
+  const { data, isError, polls } = useConfirmationMessage(booking.id);
+  // Writing: waiting for the first answer, or still polling while the AI works. After the last poll the card hides.
+  const writing = !data ? !isError : data.status === "pending" && polls < CONFIRMATION_MAX_POLLS;
+  const message = data?.status === "ready" ? data : null;
 
   function addToCalendar() {
     downloadIcs(
@@ -59,22 +54,26 @@ export function BookingSuccess({
           {booking.name}, you have {slot.durationMinutes} minutes with {hostName}. All times in {timeZone}.
         </p>
       </div>
-      {isError ? null : data ? (
+      {message ? (
         <figure className="flex flex-col gap-2 rounded-2xl bg-card p-4 ring-1 ring-border">
-          <blockquote className="text-body">{data.message}</blockquote>
-          {data.source === "ai" ? (
+          <blockquote className="text-body">{message.message}</blockquote>
+          {message.source === "ai" ? (
             <figcaption className="flex items-center gap-1 text-footnote text-muted-foreground">
               <Sparkles className="size-3" aria-hidden />
               Written by AI
             </figcaption>
           ) : null}
         </figure>
-      ) : (
-        <div className="flex flex-col gap-2 rounded-2xl bg-card p-4 ring-1 ring-border" role="status" aria-label="Writing your confirmation">
+      ) : writing ? (
+        <div className="flex flex-col gap-2 rounded-2xl bg-card p-4 ring-1 ring-border" role="status">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-2/3" />
+          <p className="flex items-center gap-1 text-footnote text-muted-foreground">
+            <Sparkles className="size-3" aria-hidden />
+            Writing a note for you…
+          </p>
         </div>
-      )}
+      ) : null}
       <div className="flex flex-wrap gap-2">
         <Button variant="glass" onClick={addToCalendar}>
           <CalendarPlusIcon aria-hidden />
