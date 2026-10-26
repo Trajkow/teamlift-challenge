@@ -68,6 +68,7 @@ export function SplitSlotPill({
       </button>
       <button
         ref={bookRef}
+        data-slot-book={slot.id}
         type="button"
         aria-label={`Book ${dayLabel} at ${time}`}
         onClick={onBook}

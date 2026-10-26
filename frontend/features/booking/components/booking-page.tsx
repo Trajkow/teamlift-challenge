@@ -122,7 +122,11 @@ export function BookingPage() {
         <BookingDialog
           slot={selected}
           timeZone={timeZone}
-          onClose={() => setDialogOpen(false)}
+          onClose={() => {
+            setDialogOpen(false);
+            // The dialog opened without a trigger, so hand focus back to the slot's Book button (Escape then works there).
+            requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(`[data-slot-book="${selected.id}"]`)?.focus());
+          }}
           onBooked={(b) => {
             setDialogOpen(false);
             setSelectedId(null);
