@@ -27,6 +27,12 @@ export const appTimeZone = () => process.env.APP_TIME_ZONE || 'Europe/Skopje';
 
 const notFound = (what: string) => new AppError(404, 'NOT_FOUND', `${what} not found`);
 
+export type ConfirmationResult =
+  | {status: 'ready'; message: string; source: 'ai' | 'template'}
+  | {status: 'pending'};
+/** How long a failed generation is remembered, so polling gets the template instead of starting it again. */
+const FAILED_TTL_MS = 10 * 60_000;
+
 @Injectable()
 export class SlotsService {
   constructor(
@@ -34,6 +40,9 @@ export class SlotsService {
     private readonly ai: ConfirmationMessageService,
     private readonly calendar: CalendarBusyService,
   ) {}
+
+  /** AI confirmations in flight or failed, by booking id. In memory: one backend instance. */
+  private readonly generations = new Map<string, {state: 'pending'} | {state: 'failed'; at: number}>();
 
   async config() {
     return {
@@ -116,6 +125,8 @@ export class SlotsService {
       const booking = await this.prisma.booking.create({
         data: {slotId, name: dto.name, email: dto.email, note: dto.note ?? null},
       });
+      // Start the AI message now; the free tier takes 15 to 25 s, and the success screen polls for it.
+      this.startGeneration(booking.id);
       return {
         id: booking.id,
         slot: toPublicSlot({...slot, booking: {id: booking.id}}),
@@ -152,26 +163,53 @@ export class SlotsService {
     if (count === 0) throw notFound('Booking');
   }
 
-  /** AI confirmation text for a booking, generated once and stored; falls back to a template. Never fails because of the LLM. */
-  async confirmationMessage(id: string): Promise<{message: string; source: 'ai' | 'template'}> {
+  /**
+   * AI confirmation for a booking. Returns the stored AI text, `pending` while it is being generated, or the template
+   * when there is no key or generation failed. Never fails because of the LLM.
+   */
+  async confirmationMessage(id: string): Promise<ConfirmationResult> {
     if (!UUID_RE.test(id)) throw notFound('Booking');
     const booking = await this.prisma.booking.findUnique({where: {id}, include: {slot: true}});
     if (!booking) throw notFound('Booking');
-    if (booking.confirmationMessage) return {message: booking.confirmationMessage, source: 'ai'};
-    const timeZone = appTimeZone();
+    if (booking.confirmationMessage) return {status: 'ready', message: booking.confirmationMessage, source: 'ai'};
+    const template = (): ConfirmationResult => ({
+      status: 'ready',
+      message: templateMessage({name: booking.name, startsAt: booking.slot.startsAt, timeZone: appTimeZone()}),
+      source: 'template',
+    });
+    if (!this.ai.isEnabled()) return template();
+    const job = this.generations.get(id);
+    if (job?.state === 'failed' && Date.now() - job.at < FAILED_TTL_MS) return template();
+    // Not started yet (for example after a restart): start it and let the caller poll.
+    if (job?.state !== 'pending') this.startGeneration(id);
+    return {status: 'pending'};
+  }
+
+  /** Generates and stores the AI message in the background. Never throws; a failure is remembered for polling. */
+  private startGeneration(id: string): void {
+    if (!this.ai.isEnabled() || this.generations.get(id)?.state === 'pending') return;
+    this.generations.set(id, {state: 'pending'});
+    void this.generate(id)
+      .then((ok) => (ok ? this.generations.delete(id) : this.generations.set(id, {state: 'failed', at: Date.now()})))
+      .catch(() => this.generations.set(id, {state: 'failed', at: Date.now()}));
+  }
+
+  private async generate(id: string): Promise<boolean> {
+    const booking = await this.prisma.booking.findUnique({where: {id}, include: {slot: true}});
+    if (!booking) return false;
+    if (booking.confirmationMessage) return true;
     const startsAt = booking.slot.startsAt;
     const generated = await this.ai.generate({
       name: booking.name,
       startsAt,
       durationMinutes: Math.round((booking.slot.endsAt.getTime() - startsAt.getTime()) / 60_000),
       note: booking.note,
-      timeZone,
+      timeZone: appTimeZone(),
       hostName: process.env.HOST_NAME || null,
     });
-    if (!generated) return {message: templateMessage({name: booking.name, startsAt, timeZone}), source: 'template'};
-    // Keep the first stored message if two requests raced.
+    if (!generated) return false;
+    // Keep the first stored message if two generations raced.
     await this.prisma.booking.updateMany({where: {id, confirmationMessage: null}, data: {confirmationMessage: generated}});
-    const stored = await this.prisma.booking.findUnique({where: {id}, select: {confirmationMessage: true}});
-    return {message: stored?.confirmationMessage ?? generated, source: 'ai'};
+    return true;
   }
 }

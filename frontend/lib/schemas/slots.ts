@@ -34,6 +34,9 @@ export type HostSlot = PublicSlot & {
 
 export type BookingConfirmation = { id: string; slot: PublicSlot; name: string; createdAt: string };
 
-export type ConfirmationMessage = { message: string; source: "ai" | "template" };
+/** `pending` while the AI is still writing (the free tier takes 15 to 25 s); poll until `ready`. */
+export type ConfirmationMessage =
+  | { status: "ready"; message: string; source: "ai" | "template" }
+  | { status: "pending" };
 
 export type AppConfig = { timeZone: string; hostName: string; hostKeyRequired: boolean; calendarConnected: boolean };

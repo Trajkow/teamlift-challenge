@@ -245,6 +245,7 @@ describe('confirmation message', () => {
     const booking = (await book(slot.id, {name: 'Ana', email: 'ana@example.com'})).body;
     const res = await confirm(booking.id);
     expect(res.status).toBe(200);
+    expect(res.body.status).toBe('ready');
     expect(res.body.source).toBe('template');
     expect(res.body.message).toContain('Ana');
   });
@@ -255,7 +256,7 @@ describe('confirmation message', () => {
     await prisma.booking.update({where: {id: booking.id}, data: {confirmationMessage: 'See you soon, Ana!'}});
     const res = await confirm(booking.id);
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({message: 'See you soon, Ana!', source: 'ai'});
+    expect(res.body).toEqual({status: 'ready', message: 'See you soon, Ana!', source: 'ai'});
   });
 
   it('404s for unknown or malformed booking ids', async () => {

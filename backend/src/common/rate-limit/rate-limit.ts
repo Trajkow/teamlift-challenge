@@ -34,8 +34,8 @@ const perMinute = (envName: string, fallback: number) => ({
 export const RateLimit = {
   /** Creating a booking: 10 per minute per client IP. */
   booking: () => Throttle({default: perMinute('RATE_LIMIT_BOOKING_PER_MIN', 10)}),
-  /** Confirmation message (LLM call): 10 per minute per client IP. */
-  confirmation: () => Throttle({default: perMinute('RATE_LIMIT_CONFIRMATION_PER_MIN', 10)}),
+  /** Confirmation message: 60 per minute per client IP, because the success screen polls it while the AI writes. */
+  confirmation: () => Throttle({default: perMinute('RATE_LIMIT_CONFIRMATION_PER_MIN', 60)}),
   /** Host writes (create or delete slots, cancel bookings): 30 per minute per client IP. */
   hostWrite: () => Throttle({default: perMinute('RATE_LIMIT_HOST_WRITE_PER_MIN', 30)}),
 };

@@ -84,3 +84,10 @@ Sending the message by email, and streaming.
   template fallback, stored-message path and 404, and a live backend on port 3200 returning the template.
 - **Polish:** `SLOT_OVERLAP` now has a human message; the host time column no longer wraps; `INVALID_TIME` is in the
   error table and has a friendly frontend message.
+- **Live fix (after deploy):** the free tier answered in 15 to 25 s (and `gemini-flash-latest` timed out), so the
+  5 s limit always fell back to the template. Generation now starts in the background right after a booking
+  (`SlotsService.startGeneration`), the endpoint answers `{ status: 'pending' }` until the text is stored, and the
+  success screen polls every 3 s (up to 20 polls) showing "Writing a note for you…". Default model is
+  `gemini-3.5-flash-lite` with minimal thinking (retried without thinking config if a model rejects it), one retry on
+  503, a 40 s limit, and failure logs now include the status and reason. Confirmation rate limit raised to 60/min for
+  polling. Verified with a real key: AI text after about 18 s.
