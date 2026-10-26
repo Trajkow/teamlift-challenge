@@ -2,6 +2,7 @@ import {createCipheriv, createDecipheriv, randomBytes} from 'node:crypto';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_BYTES = 12;
+const TAG_BYTES = 16;
 
 /** Parses `CALENDAR_TOKEN_KEY` (32 bytes, base64). Returns null when it is missing or the wrong size. */
 export function parseTokenKey(raw: string | undefined): Buffer | null {
@@ -24,7 +25,9 @@ export function decrypt(payload: string, key: Buffer): string {
   const parts = payload.split(':');
   if (parts.length !== 3) throw new Error('malformed encrypted value');
   const [iv, tag, data] = parts.map((p) => Buffer.from(p, 'base64')) as [Buffer, Buffer, Buffer];
-  const decipher = createDecipheriv(ALGORITHM, key, iv);
+  // Pin the tag length: GCM would otherwise accept a truncated tag, which weakens tamper detection.
+  if (tag.length !== TAG_BYTES) throw new Error('malformed encrypted value');
+  const decipher = createDecipheriv(ALGORITHM, key, iv, {authTagLength: TAG_BYTES});
   decipher.setAuthTag(tag);
   return Buffer.concat([decipher.update(data), decipher.final()]).toString('utf8');
 }
