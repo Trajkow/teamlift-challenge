@@ -59,7 +59,7 @@ Use **Host** (publishes slots), **Guest** (books), **Slot**, **Booking**. Never 
 - Don't install packages that aren't pre-approved without asking. Pre-approved packages: the Phase 0 stack (Nest,
   Prisma, `pg`, zod, luxon, `@nestjs/throttler`, vitest, supertest, oxlint; Next, React, shadcn and its deps,
   TanStack Query, react-hook-form, `@hookform/resolvers`, sonner, lucide-react, next-themes), plus `@google/genai`
-  (Phase 3).
+  (Phase 3) and `google-auth-library` (Phase 6).
 - **Don't run `npm run lint` or `npm run build` while working.** Use `npm test`, `npm run test:e2e` and
   `npm run typecheck` instead. Lint and build run **only when a phase branch is merged** into `main` (see the merge
   step in `docs/plans/README.md`).

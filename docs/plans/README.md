@@ -15,7 +15,8 @@ without any earlier conversation.
 | 2 | [phase-2.md](phase-2.md) | Frontend: guest booking page + host page | 0 (API contract below); 1 to test end to end | ✅ done (e2e vs real backend pending merge) |
 | 3 | [phase-3.md](phase-3.md) | Optional extra: AI confirmation message (Gemini free tier) | 1, 2 | ✅ done (live Gemini call unverified) |
 | 4 | [phase-4.md](phase-4.md) | Deploy: Neon (DB) + Render (API) + Vercel (web) | 1, 2 (3 if done) | 🚧 in progress (repo prep done; deploy pending user accounts) |
-| 5 | [phase-5.md](phase-5.md) | README, final QA, submission email, video script | 4 | ⏳ todo |
+| 5 | [phase-5.md](phase-5.md) | README, final QA, submission email, video script | 4, 6 | ⏳ todo |
+| 6 | [phase-6.md](phase-6.md) | Second extra: Google Calendar conflicts (free/busy, marked unavailable) | 1, 2, 3 | ⏳ todo |
 
 ```
 0 ──► 1 ──┬──► 3 ──► 4 ──► 5
@@ -39,7 +40,7 @@ Status values: `⏳ todo`, `🚧 in progress (agent)`, `✅ done`, `⛔ blocked 
 | Overlapping slots | Exclusion constraint `EXCLUDE USING gist (tstzrange(starts_at, ends_at, '[)') WITH &&)`, mapped to 409 `SLOT_OVERLAP`. |
 | Booked slots in the guest UI | Still shown, greyed out and labelled "Booked", so reviewers can see requirement 4. Past slots are hidden. |
 | Cancel / delete | Host can delete an **unbooked** slot. Host can cancel a booking, which deletes the booking row and frees the slot. Guests can't cancel (no accounts). |
-| Optional extra | **AI** (Gemini through Google AI Studio free tier), not Google Calendar. It fits TeamLift's focus. |
+| Optional extras | **Both.** AI (Gemini, Phase 3) first, then Google Calendar conflicts (Phase 6). |
 | Hosting | DB on Neon (free), backend on Render (free web service), frontend on Vercel. Vercel rewrites `/api/*` to Render, so the app is same-origin and needs no CORS work. |
 | Ports | backend 3000, frontend 3001, Postgres **5433** (avoids clashing with other local Postgres instances on 5432). Container `slot_db`. |
 
@@ -50,7 +51,7 @@ All routes sit under `/api`. Instants are ISO 8601 UTC strings. `H` = needs `X-H
 | Method & path | Who | Body / query | Response | Phase |
 |---|---|---|---|---|
 | `GET /api/health` | — | | `{ status: 'ok' }` | 0 |
-| `GET /api/config` | — | | `{ timeZone, hostName, hostKeyRequired }` | 1 |
+| `GET /api/config` | — | | `{ timeZone, hostName, hostKeyRequired, calendarConnected }` | 1, 6 |
 | `GET /api/slots` | — | `?from=YYYY-MM-DD&to=YYYY-MM-DD` (optional, default today +30 days) | `PublicSlot[]` (future only, sorted by `startsAt`) | 1 |
 | `POST /api/slots/:id/bookings` | — | `{ name, email, note? }` | 201 `BookingConfirmation` | 1 |
 | `GET /api/host/slots` | H | `?includePast=false` | `HostSlot[]` | 1 |
@@ -60,7 +61,7 @@ All routes sit under `/api`. Instants are ISO 8601 UTC strings. `H` = needs `X-H
 | `POST /api/bookings/:id/confirmation-message` | — | | `{ message, source: 'ai' \| 'template' }` | 3 |
 
 ```ts
-type PublicSlot = { id: string; startsAt: string; endsAt: string; durationMinutes: number; isBooked: boolean };
+type PublicSlot = { id: string; startsAt: string; endsAt: string; durationMinutes: number; isBooked: boolean; isBusy: boolean }; // isBusy: Phase 6
 type HostSlot = PublicSlot & { booking: { id: string; name: string; email: string; note: string | null; createdAt: string } | null };
 type BookingConfirmation = { id: string; slot: PublicSlot; name: string; createdAt: string };
 ```
@@ -82,6 +83,7 @@ Error codes (`{ error, message }`):
 | 404 | `NOT_FOUND` | unknown slot or booking |
 | 409 | `SLOT_TAKEN` | slot already booked |
 | 409 | `SLOT_OVERLAP` | new slot overlaps an existing one |
+| 409 | `SLOT_UNAVAILABLE` | booking a slot that clashes with the host's Google Calendar (Phase 6) |
 | 409 | `SLOT_BOOKED` | deleting a slot that has a booking |
 | 422 | `INVALID_TIME` | slot start time falls in a daylight saving gap |
 | 422 | `SLOT_IN_PAST` | booking or creating a slot in the past |
