@@ -5,20 +5,25 @@ import { DayHeader } from "@/components/day-header";
 import { formatClock, formatDate, todayIn } from "@/lib/time";
 import type { PublicSlot } from "@/lib/schemas/slots";
 import { cn } from "@/lib/utils";
+import { SplitSlotPill } from "./split-slot-pill";
 
-/** Future slots grouped by day. Available slots are buttons; booked ones are muted, struck through and disabled,
+/** Future slots grouped by day. Available slots are buttons (the selected one expands into a split time │ Book pill); booked ones are muted, struck through and disabled,
  *  and ones that clash with the host's calendar are muted and labelled Busy (always shown, never struck through). */
 export function SlotList({
   slots,
   timeZone,
   selectedId,
   onSelect,
+  onDeselect,
+  onBook,
   showBooked,
 }: {
   slots: PublicSlot[];
   timeZone: string;
   selectedId: string | null;
   onSelect: (slot: PublicSlot) => void;
+  onDeselect: () => void;
+  onBook: (slot: PublicSlot) => void;
   showBooked: boolean;
 }) {
   const today = todayIn(timeZone);
@@ -67,18 +72,24 @@ export function SlotList({
                     );
                   }
                   const isSelected = s.id === selectedId;
+                  if (isSelected) {
+                    return (
+                      <li key={s.id} className="col-span-2">
+                        <SplitSlotPill slot={s} time={time} dayLabel={dayLabel} onDeselect={onDeselect} onBook={() => onBook(s)} />
+                      </li>
+                    );
+                  }
                   return (
                     <li key={s.id}>
                       <button
                         type="button"
-                        aria-pressed={isSelected}
+                        data-slot-time={s.id}
+                        aria-pressed={false}
                         aria-label={`${time} on ${dayLabel}, available, ${s.durationMinutes} minutes`}
                         onClick={() => onSelect(s)}
                         className={cn(
                           "h-11 w-full rounded-full text-[0.9375rem] font-medium whitespace-nowrap tabular-nums outline-none transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring active:scale-[0.98] motion-reduce:active:scale-100",
-                          isSelected
-                            ? "bg-primary/15 text-accent-link ring-2 ring-primary ring-inset"
-                            : "bg-card text-foreground ring-1 ring-border ring-inset hover:bg-muted",
+                          "bg-card text-foreground ring-1 ring-border ring-inset hover:bg-muted",
                         )}
                       >
                         {time}
