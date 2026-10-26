@@ -56,6 +56,8 @@ it shows as Booked; `curl -XPOST https://<vercel>/api/slots/<id>/bookings ...` o
 | Render | `HOST_NAME` | optional, your name for the UI |
 | Render | `GEMINI_API_KEY` | optional, Google AI Studio; without it the template message is used |
 | Render | `GEMINI_MODEL` | optional, a free-tier Flash model name from AI Studio (default `gemini-flash-latest`) |
+| Render | `GOOGLE_CALENDAR_ID` | optional, your calendar's ID (see "Google Calendar" below) |
+| Render | `GOOGLE_SERVICE_ACCOUNT_JSON` | optional, `base64 -w0 key.json` of the service account key |
 | Render | `HOST_KEY` | leave **unset** (host page open on the demo) |
 | Vercel | `BACKEND_URL` | Render service URL |
 
@@ -63,3 +65,20 @@ it shows as Booked; `curl -XPOST https://<vercel>/api/slots/<id>/bookings ...` o
 - Free Render instances sleep after about 15 minutes idle. The first request takes 30 to 50 s; the UI shows its
   skeleton and retries for about a minute.
 - To switch the host key on later, set `HOST_KEY` on Render and enter it on `/host`.
+
+## Google Calendar (optional)
+Slots that clash with an event in your Google Calendar show as "Busy" to guests and cannot be booked. Only
+free/busy times are read, never event titles. Without the two variables the feature is off and everything else works.
+
+1. Go to https://console.cloud.google.com, create a project, then **APIs & Services > Enable APIs** and enable
+   **Google Calendar API**.
+2. **IAM & Admin > Service Accounts > Create** (no roles needed). Open it, then **Keys > Add key > JSON**. This
+   downloads the key file.
+3. In Google Calendar (web) go to **Settings > your calendar > Share with specific people** and add the service
+   account's email with **See only free/busy**.
+4. Set `GOOGLE_CALENDAR_ID` (your calendar's ID from "Integrate calendar", usually your Gmail address) and
+   `GOOGLE_SERVICE_ACCOUNT_JSON` (`base64 -w0 key.json`) in `backend/.env` locally and on Render.
+5. Check: create a slot that overlaps a real event, open `/` and look for "Busy". The host page header reads
+   "Google Calendar connected".
+
+If Google is slow (over 3 seconds) or unreachable, slots show as normal and booking still works.
