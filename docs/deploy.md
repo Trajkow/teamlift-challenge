@@ -56,8 +56,11 @@ it shows as Booked; `curl -XPOST https://<vercel>/api/slots/<id>/bookings ...` o
 | Render | `HOST_NAME` | optional, your name for the UI |
 | Render | `GEMINI_API_KEY` | optional, Google AI Studio; without it the template message is used |
 | Render | `GEMINI_MODEL` | optional, a free-tier Flash model name from AI Studio (default `gemini-flash-latest`) |
-| Render | `GOOGLE_CALENDAR_ID` | optional, your calendar's ID (see "Google Calendar" below) |
+| Render | `GOOGLE_CALENDAR_ID` | optional, your calendar's ID (see "Google Calendar with a service account" below) |
 | Render | `GOOGLE_SERVICE_ACCOUNT_JSON` | optional, `base64 -w0 key.json` of the service account key |
+| Render | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` | optional, OAuth client (see "Connect Google Calendar (OAuth)" below) |
+| Render | `GOOGLE_OAUTH_REDIRECT_URI` | optional, `https://<vercel-domain>/api/host/calendar/callback` |
+| Render | `CALENDAR_TOKEN_KEY` | optional, `openssl rand -base64 32` |
 | Render | `HOST_KEY` | leave **unset** (host page open on the demo) |
 | Vercel | `BACKEND_URL` | Render service URL |
 
@@ -66,7 +69,33 @@ it shows as Booked; `curl -XPOST https://<vercel>/api/slots/<id>/bookings ...` o
   skeleton and retries for about a minute.
 - To switch the host key on later, set `HOST_KEY` on Render and enter it on `/host`.
 
-## Google Calendar (optional)
+## Connect Google Calendar (OAuth, optional)
+The host clicks **Connect Google Calendar** on `/host`, signs in with Google, and from then on slots that clash with
+that account's primary calendar show as "Busy". Only free/busy times are read (scope `calendar.freebusy`), never event
+details. There is one site-wide connection; connecting again replaces it and **Disconnect** removes it. It wins over
+the service account below, which stays as the fallback. The refresh token is stored encrypted (AES-256-GCM).
+
+1. Google Cloud Console, in the same project: **APIs & Services > OAuth consent screen**.
+   - User type **External**, app name "Slot", plus your email.
+   - Add the scope `.../auth/calendar.freebusy`.
+   - Add yourself (and any reviewer emails you know) as **Test users**.
+2. **Credentials > Create credentials > OAuth client ID > Web application**.
+   - Authorised redirect URIs: `https://<vercel-domain>/api/host/calendar/callback` and
+     `http://localhost:3001/api/host/calendar/callback`.
+   - Copy the client ID and secret.
+3. Set `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI` and `CALENDAR_TOKEN_KEY`
+   (`openssl rand -base64 32`) on Render, and in `backend/.env` locally, then redeploy. The button only appears when
+   all four are set. Locally, open the app on http://localhost:3001 so the redirect URI matches.
+4. While the consent screen is in **Testing**, only test users can connect; anyone else gets "Access blocked". To let
+   any reviewer try it, click **Publish app**. Google then shows an "unverified app" warning that they click through
+   (Advanced > Go to Slot). That is fine for a demo of up to 100 accounts.
+5. Check: on `/host` click Connect, accept the consent screen and see "Connected as ...". A slot that overlaps a real
+   event shows "Busy" on `/`. Disconnect falls back to the service account, or turns the check off.
+
+If Google rejects the stored token (revoked or expired), `/host` shows "Reconnect" and slots show as not busy until
+you do. Anyone who opens `/host` can connect their own calendar while no `HOST_KEY` is set (the demo setup).
+
+## Google Calendar with a service account (optional, fallback)
 Slots that clash with an event in your Google Calendar show as "Busy" to guests and cannot be booked. Only
 free/busy times are read, never event titles. Without the two variables the feature is off and everything else works.
 
@@ -78,7 +107,7 @@ free/busy times are read, never event titles. Without the two variables the feat
    account's email with **See only free/busy**.
 4. Set `GOOGLE_CALENDAR_ID` (your calendar's ID from "Integrate calendar", usually your Gmail address) and
    `GOOGLE_SERVICE_ACCOUNT_JSON` (`base64 -w0 key.json`) in `backend/.env` locally and on Render.
-5. Check: create a slot that overlaps a real event, open `/` and look for "Busy". The host page header reads
-   "Google Calendar connected".
+5. Check: create a slot that overlaps a real event, open `/` and look for "Busy". The Google Calendar card on `/host`
+   reads "Using the site's default calendar".
 
 If Google is slow (over 3 seconds) or unreachable, slots show as normal and booking still works.

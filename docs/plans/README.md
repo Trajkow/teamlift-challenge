@@ -17,7 +17,7 @@ without any earlier conversation.
 | 4 | [phase-4.md](phase-4.md) | Deploy: Neon (DB) + Render (API) + Vercel (web) | 1, 2 (3 if done) | 🚧 in progress (repo prep done; deploy pending user accounts) |
 | 5 | [phase-5.md](phase-5.md) | README, final QA, submission email, video script | 4, 6, 7 | ⏳ todo |
 | 6 | [phase-6.md](phase-6.md) | Second extra: Google Calendar conflicts (free/busy, marked unavailable) | 1, 2, 3 | ✅ done (live Google call unverified) |
-| 7 | [phase-7.md](phase-7.md) | Host connects Google Calendar on /host (OAuth, encrypted token, service account fallback) | 6 | ⏳ todo |
+| 7 | [phase-7.md](phase-7.md) | Host connects Google Calendar on /host (OAuth, encrypted token, service account fallback) | 6 | ✅ done (live OAuth unverified) |
 
 ```
 0 ──► 1 ──┬──► 3 ──► 4 ──► 5
