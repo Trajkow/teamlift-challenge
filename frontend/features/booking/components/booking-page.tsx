@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarX2Icon } from "lucide-react";
+import { CalendarX2Icon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useState } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
@@ -89,8 +89,10 @@ export function BookingPage() {
             <p className="text-subhead text-muted-foreground" aria-live="polite">
               {open === 0 ? "Nothing available right now" : `${open} available`}
             </p>
-            <Button variant={showBooked ? "default" : "glass"} size="sm" aria-pressed={showBooked} onClick={() => setShowBooked((v) => !v)} className="max-md:min-h-11">
-              Show booked
+            {/* The label says what a click does, so no aria-pressed (a changing label plus pressed state reads twice). */}
+            <Button variant="glass" size="sm" onClick={() => setShowBooked((v) => !v)} className="max-md:min-h-11">
+              {showBooked ? <EyeOffIcon aria-hidden /> : <EyeIcon aria-hidden />}
+              {showBooked ? "Hide booked" : "Show booked"}
             </Button>
           </div>
           {!showBooked && !hasVisible ? (
