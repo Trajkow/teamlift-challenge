@@ -15,8 +15,9 @@ without any earlier conversation.
 | 2 | [phase-2.md](phase-2.md) | Frontend: guest booking page + host page | 0 (API contract below); 1 to test end to end | ✅ done (e2e vs real backend pending merge) |
 | 3 | [phase-3.md](phase-3.md) | Optional extra: AI confirmation message (Gemini free tier) | 1, 2 | ✅ done (live Gemini call unverified) |
 | 4 | [phase-4.md](phase-4.md) | Deploy: Neon (DB) + Render (API) + Vercel (web) | 1, 2 (3 if done) | 🚧 in progress (repo prep done; deploy pending user accounts) |
-| 5 | [phase-5.md](phase-5.md) | README, final QA, submission email, video script | 4, 6 | ⏳ todo |
+| 5 | [phase-5.md](phase-5.md) | README, final QA, submission email, video script | 4, 6, 7 | ⏳ todo |
 | 6 | [phase-6.md](phase-6.md) | Second extra: Google Calendar conflicts (free/busy, marked unavailable) | 1, 2, 3 | ✅ done (live Google call unverified) |
+| 7 | [phase-7.md](phase-7.md) | Host connects Google Calendar on /host (OAuth, encrypted token, service account fallback) | 6 | ⏳ todo |
 
 ```
 0 ──► 1 ──┬──► 3 ──► 4 ──► 5
@@ -59,6 +60,10 @@ All routes sit under `/api`. Instants are ISO 8601 UTC strings. `H` = needs `X-H
 | `DELETE /api/host/slots/:id` | H | | 204 | 1 |
 | `DELETE /api/host/bookings/:id` | H | | 204 (slot becomes available again) | 1 |
 | `POST /api/bookings/:id/confirmation-message` | — | | `{ message, source: 'ai' \| 'template' }` | 3 |
+| `GET /api/host/calendar` | H | | `{ connected, source, email, needsReconnect, oauthAvailable }` | 7 |
+| `GET /api/host/calendar/connect` | H (`?hostKey=`) | | 302 to Google consent | 7 |
+| `GET /api/host/calendar/callback` | — (`state`) | `?code&state` | 302 to `/host?calendar=connected\|error` | 7 |
+| `DELETE /api/host/calendar` | H | | 204 | 7 |
 
 ```ts
 type PublicSlot = { id: string; startsAt: string; endsAt: string; durationMinutes: number; isBooked: boolean; isBusy: boolean }; // isBusy: Phase 6
