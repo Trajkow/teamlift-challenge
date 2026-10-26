@@ -79,7 +79,7 @@
   /* Accent: filled buttons stay #0071e3 with white text in both modes (AA); text accents differ per mode */
   --accent-brand: #0071e3;
   --accent-link: #0066cc;
-  /* Accent text on an accent tint (tab bar, default badge): darker than the link colour to keep 4.5:1. */
+  /* Accent text on an accent tint (default badge): darker than the link colour to keep 4.5:1. */
   --accent-on-tint: #00479e;
 
   /* Status tints: tinted pill with dark text from the same hue */
@@ -159,20 +159,16 @@
   /* Secondary text on glass: the backdrop is unknown, so it uses a stronger grey (>= 4.5:1 on the worst ambient spot). */
   --glass-secondary: #4e4e53;
 
-  /* Floating chrome geometry, defined once. Heights come from the components that use them:
-     app-nav (h-14 capsule at top-3), mobile-tab-bar (p-1 + min-h-12 items + 1px rims = 58px at bottom-3 + safe area). */
+  /* Floating chrome geometry, defined once. The only floating chrome is the app-nav capsule (h-14 at top-3). */
   --nav-top: 0.75rem;
   --nav-height: 3.5rem;
-  --tabbar-height: 3.625rem;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --tabbar-bottom: calc(0.75rem + var(--safe-bottom));
   /* Where sticky content (day headers, toasts) sits: just under the nav capsule. */
   --sticky-top: calc(var(--nav-top) + var(--nav-height) + 0.5rem);
-  /* Bottom offset of floating bars: above the tab bar on phones, near the edge from md up. */
+  /* Bottom offset of anything floating near the bottom edge (toasts), clear of the home indicator. */
   --float-bottom: calc(1rem + var(--safe-bottom));
-  --float-bottom-tabbar: calc(var(--tabbar-bottom) + var(--tabbar-height) + 0.75rem);
-  /* Bottom padding of the page so the last content clears the tab bar. */
-  --page-pad-bottom: calc(var(--tabbar-bottom) + var(--tabbar-height) + 1.5rem);
+  /* Bottom padding of the page. */
+  --page-pad-bottom: calc(3rem + var(--safe-bottom));
 
   /* Slim scrollbars */
   --scroll-thumb: rgba(60, 60, 67, 0.35);
@@ -290,12 +286,6 @@
   }
 }
 
-@media (min-width: 48rem) {
-  :root {
-    --float-bottom-tabbar: var(--float-bottom);
-    --page-pad-bottom: 3rem;
-  }
-}
 
 /* Toasts: glass over the page, label-coloured text, solid under the fallbacks (tokens switch there). */
 [data-sonner-toaster] [data-sonner-toast] {

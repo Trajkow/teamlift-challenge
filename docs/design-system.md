@@ -21,7 +21,7 @@ hex or `rgb()` colours in components, with three documented exceptions: the soli
 | `--field` (`bg-field`) | `rgba(120,120,128,.10)` | `rgba(120,120,128,.24)` | input fill |
 | `--primary` | `#0071E3` | `#0071E3` | filled buttons (white text, both modes) |
 | `--accent-link` (`text-accent-link`) | `#0066CC` | `#2997FF` | links and accent text on solid surfaces |
-| `--accent-on-tint` | `#00479E` | `#A8D2FF` | accent text on an accent tint (tab bar, default badge) |
+| `--accent-on-tint` | `#00479E` | `#A8D2FF` | accent text on an accent tint (default badge) |
 
 Radius: controls 12 px (`rounded-lg`), cards 18 px (`rounded-xl`) to 22 px, dialogs/sheets 26-28 px, buttons and chips are
 pills (`rounded-full`). Motion: 150-250 ms ease-out (`--duration*`, `--ease-out`); everything respects
@@ -48,8 +48,8 @@ CSS only: `.glass` (nav, pills, segmented controls), `.glass-thick` (dialogs, sh
 canvas). Material: translucent tint, `blur(22px) saturate(180%)`, 1 px rim, inner highlight, drop shadow, and a
 `::before` specular sheen.
 
-**Allowed only on the floating navigation and control layer:** top nav capsule, mobile tab bar,
-segmented controls, secondary (`glass`) pills, menus, popovers, dialogs, sheets, toasts, the floating booking bar.
+**Allowed only on the floating navigation and control layer:** top nav capsule,
+segmented controls, secondary (`glass`) pills, menus, popovers, dialogs, sheets and toasts. Booking happens on the selected slot itself (a split "time │ Book →" pill), so there is no floating booking bar.
 
 **Never on content:** cards, list rows, forms, slot buttons, tables. Those stay on solid `bg-card` surfaces. Keep to
 about four glass layers on screen at once. Never animate `backdrop-filter`. Never put body text on `.ambient` without a
@@ -69,10 +69,9 @@ Defined once in `globals.css` and used everywhere; never hard-code these numbers
 | Variable | Meaning |
 |---|---|
 | `--nav-top`, `--nav-height` | top capsule: 12 px from the top, 56 px high |
-| `--tabbar-height`, `--tabbar-bottom` | mobile tab bar: 58 px (p-1 + 48 px items + 1 px rims), 12 px + safe area from the bottom |
 | `--sticky-top` | sticky content (day headers) and toasts sit here, 8 px below the nav |
-| `--float-bottom`, `--float-bottom-tabbar` | floating bars (booking bar, schedule save bar): above the tab bar on phones, 16 px + safe area from `md` |
-| `--page-pad-bottom` | bottom padding of `main` so content clears the tab bar |
+| `--float-bottom` | anything floating near the bottom edge: 16 px + safe area |
+| `--page-pad-bottom` | bottom padding of `main` (3 rem + safe area) |
 
 ## Components
 
@@ -119,7 +118,7 @@ Use `bg-success-bg text-success`, `bg-warning-bg text-warning`, `bg-danger-bg te
 
 Normal text 4.5:1, graphics and focus rings 3:1, checked in both themes (key pairs): label on glass 12.4 / 9.7;
 glass secondary on glass 6.1 / 5.3; secondary on card 5.1 / 6.6; white on `#0071E3` 4.7; link on canvas 5.1 / 6.2;
-status pills 4.7-6.6; tab bar active 5.4 / 6.0; focus ring 3.7 / 4.3. When you add a colour pair, compute it.
+status pills 4.7-6.6; focus ring 3.7 / 4.3. When you add a colour pair, compute it.
 
 ## Do and don't
 
