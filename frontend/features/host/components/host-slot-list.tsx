@@ -7,6 +7,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { DayHeader } from "@/components/day-header";
 import { EmptyState } from "@/components/empty-state";
 import { StatusBadge } from "@/components/status-badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toastError } from "@/lib/error-messages";
@@ -70,11 +71,11 @@ export function HostSlotList({ slots, timeZone }: { slots: HostSlot[]; timeZone:
                       {s.booking.note ? <p className="mt-1 text-subhead break-words text-muted-foreground">{s.booking.note}</p> : null}
                     </>
                   ) : (
-                    <p className="pt-0.5 text-subhead text-muted-foreground">Open for booking</p>
+                    <p className="pt-0.5 text-subhead text-muted-foreground">{s.isBusy ? "Clashes with your Google Calendar, guests can't book it" : "Open for booking"}</p>
                   )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <StatusBadge booked={s.isBooked} />
+                  {s.isBusy ? <Badge variant="warning">Calendar conflict</Badge> : <StatusBadge booked={s.isBooked} />}
                   <DropdownMenu>
                     <DropdownMenuTrigger
                       render={<Button variant="ghost" size="icon-sm" aria-label={`Actions for ${formatClock(s.startsAt, timeZone)} on ${formatDate(g.date)}`} />}

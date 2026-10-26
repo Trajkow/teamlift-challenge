@@ -4,6 +4,7 @@ import { ApiError } from "@/lib/api";
 /** Backend error codes -> messages for people. One place, shared by the guest and host pages. */
 const MESSAGES: Record<string, string> = {
   SLOT_TAKEN: "Someone just booked this slot. Pick another one.",
+  SLOT_UNAVAILABLE: "The host is busy at that time. Pick another slot.",
   SLOT_OVERLAP: "This slot overlaps one you already published.",
   SLOT_BOOKED: "This slot has a booking. Cancel the booking first.",
   SLOT_IN_PAST: "That time has already passed. Pick a later one.",
