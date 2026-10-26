@@ -4,8 +4,8 @@ A small scheduling app in the shape of a coffee chat / office hours page: one ho
 can book one with their name and email. A slot can never be booked twice. Built for the
 [TeamLift internship challenge](teamlift_internship_challenge.md).
 
-- **Live app:** <LIVE_URL>
-- **API health check:** <API_URL>/api/health (the free Render instance sleeps, so the first load can take up to a minute)
+- **Live app:** https://teamlift-challenge.vercel.app
+- **API health check:** https://teamlift-challenge.vercel.app/api/health (the free Render instance sleeps, so the first load can take up to a minute)
 - **Video walkthrough (2 min):** _link goes here if recorded_
 
 <!-- TODO(author): add screenshots of the guest page (/), the booking success screen and the host page (/host) in
@@ -16,7 +16,7 @@ docs/screenshots/ and link them here. -->
 | Brief requirement | Where |
 |---|---|
 | 1. Create available slots (date, start time, duration) | `/host`, "Publish slots". One start time plus a count creates back-to-back slots. |
-| 2. See the list of available slots | `/`, a day strip and a grid of time pills in the one time zone. |
+| 2. See the list of available slots | `/`, time pills grouped by day, in the one time zone. |
 | 3. Book a slot with name and email | Click a pill, fill in the form, get a confirmation with an "Add to calendar" `.ics` download. |
 | 4. A booked slot is no longer available | Booked slots stay on the page, greyed out and labelled "Booked". The database refuses a second booking. |
 
@@ -120,11 +120,10 @@ Deploying (Neon + Render + Vercel) is described in [docs/deploy.md](docs/deploy.
 
 I built this with Claude Code. The work was split into phase plans in [docs/plans/](docs/plans/README.md) (scaffold,
 backend, frontend, AI, deploy, README, Google Calendar, host OAuth), and agents executed those plans one phase at a
-time on their own branches, following the rules in [AGENTS.md](AGENTS.md). Lint and build ran only when a phase branch
-was merged, and I reviewed each phase before merging. Fixes made during review and merges include
-retrying requests with backoff for the free-tier cold start, polishing the overlap error message and the host time
-column, logging the reason when the calendar check fails, and rejecting truncated auth tags when decrypting the
-calendar token. Gemini is used inside the app for the confirmation message.
+time on their own branches, following the rules in [AGENTS.md](AGENTS.md). A coordinating Claude Code session ran lint
+and build on each branch, reviewed it and fixed issues before merging, for example clearing lint warnings, logging the
+reason when the calendar check fails, and rejecting truncated auth tags when decrypting the calendar token. I made the
+product decisions (theme, no host key, both extras, the host connecting their own calendar) and set up the hosting. Gemini is used inside the app for the confirmation message.
 
 ## With more time
 
