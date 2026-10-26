@@ -1,6 +1,6 @@
 # Phase 4: Deploy
 
-**Status: 🚧 in progress (repo prep done; deploy pending user accounts)** · Depends on: 1, 2 (3 if done) · Unblocks: 5
+**Status: ✅ done** · Depends on: 1, 2 (3 if done) · Unblocks: 5
 
 ## Goal
 Put the app on a public link. Reviewers will use it the way a real user would.
@@ -74,5 +74,10 @@ The Accept steps in 4.2, done on the live link.
   a minute, so the skeleton stays until the backend wakes up. Mutations still don't retry.
 - **Checked locally:** production build + `start:prod` against a throwaway DB, seed twice, frontend `next build` and
   `next start` with `BACKEND_URL` proxying `/api` (see the report in the commit history of this phase). Throwaway DB dropped.
-- **Still to do by the user:** follow `docs/deploy.md`, then record live URLs here and finish 4.2's Accept steps.
+- **Live:** https://teamlift-challenge.vercel.app (Vercel), API on Render behind the Vercel `/api` proxy, DB on Neon.
+- **4.2 checked live (curl through the Vercel proxy):** health and config 200, create slot 201, overlap 409
+  `SLOT_OVERLAP`, booking 201, AI endpoint returns the template (no `GEMINI_API_KEY` yet), 5 parallel re-bookings all
+  409, no guest PII in the public list, host list shows the booker, cancel and delete 204. The test slot was removed.
+- **Not yet done or checked:** demo seed on Neon (the live DB had 4 booked slots and no free ones), phone-width
+  browser pass, `GEMINI_API_KEY` and the Google OAuth env vars on Render.
 - Optional keep-warm: a GitHub Actions cron pinging `/api/health` every 10 minutes was not added.

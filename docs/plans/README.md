@@ -14,8 +14,8 @@ without any earlier conversation.
 | 1 | [phase-1.md](phase-1.md) | Backend: slots, bookings, no-double-booking constraints, e2e + concurrency test | 0 | ✅ done |
 | 2 | [phase-2.md](phase-2.md) | Frontend: guest booking page + host page | 0 (API contract below); 1 to test end to end | ✅ done (e2e vs real backend pending merge) |
 | 3 | [phase-3.md](phase-3.md) | Optional extra: AI confirmation message (Gemini free tier) | 1, 2 | ✅ done (live Gemini call unverified) |
-| 4 | [phase-4.md](phase-4.md) | Deploy: Neon (DB) + Render (API) + Vercel (web) | 1, 2 (3 if done) | 🚧 in progress (repo prep done; deploy pending user accounts) |
-| 5 | [phase-5.md](phase-5.md) | README, final QA, submission email, video script | 4, 6, 7 | ⏳ todo |
+| 4 | [phase-4.md](phase-4.md) | Deploy: Neon (DB) + Render (API) + Vercel (web) | 1, 2 (3 if done) | ✅ done (live: https://teamlift-challenge.vercel.app) |
+| 5 | [phase-5.md](phase-5.md) | README, final QA, submission email, video script | 4, 6, 7 | 🚧 in progress (README done; live URLs + author review pending) |
 | 6 | [phase-6.md](phase-6.md) | Second extra: Google Calendar conflicts (free/busy, marked unavailable) | 1, 2, 3 | ✅ done (live Google call unverified) |
 | 7 | [phase-7.md](phase-7.md) | Host connects Google Calendar on /host (OAuth, encrypted token, service account fallback) | 6 | ✅ done (live OAuth unverified) |
 
