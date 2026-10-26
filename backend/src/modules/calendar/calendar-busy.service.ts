@@ -38,8 +38,9 @@ export class CalendarBusyService {
       this.remember(key, intervals);
       return intervals;
     } catch (err) {
-      // Log only the error class, never calendar data.
-      this.logger.warn(`Calendar free/busy check failed: ${err instanceof Error ? err.name : 'unknown error'}`);
+      // The messages are our own (HTTP status, missing calendar) or auth errors; they hold no key or event data.
+      const reason = err instanceof Error ? `${err.name}: ${err.message}`.slice(0, 200) : 'unknown error';
+      this.logger.warn(`Calendar free/busy check failed (${reason})`);
       return null;
     } finally {
       clearTimeout(timer);
