@@ -1,5 +1,6 @@
 "use client";
 
+import { CalendarCheck2Icon } from "lucide-react";
 import { useState } from "react";
 import { ErrorState } from "@/components/error-state";
 import { PageHeader } from "@/components/page-header";
@@ -20,7 +21,20 @@ export function HostPage() {
   const slots = useHostSlots(!!config.data && !needsKey);
   const keyRejected = isApiError(slots.error, "HOST_KEY_REQUIRED");
 
-  const header = <PageHeader title="Host" description={config.data ? `Publish slots and see who booked them. All times in ${config.data.timeZone} time.` : "Publish slots and see who booked them."} />;
+  const calendarPill = config.data ? (
+    <span
+      className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-footnote font-medium ${config.data.calendarConnected ? "bg-success-bg text-success" : "bg-muted text-muted-foreground"}`}
+    >
+      <CalendarCheck2Icon className="size-3.5" aria-hidden />
+      {config.data.calendarConnected ? "Google Calendar connected" : "Calendar not connected"}
+    </span>
+  ) : null;
+  const header = (
+    <div className="flex flex-col gap-3">
+      <PageHeader title="Host" description={config.data ? `Publish slots and see who booked them. All times in ${config.data.timeZone} time.` : "Publish slots and see who booked them."} />
+      {calendarPill}
+    </div>
+  );
 
   if (config.isError) {
     return (

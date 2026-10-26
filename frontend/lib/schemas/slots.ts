@@ -24,6 +24,8 @@ export type PublicSlot = {
   endsAt: string;
   durationMinutes: number;
   isBooked: boolean;
+  /** Clashes with the host's Google Calendar (never true for a booked slot). */
+  isBusy: boolean;
 };
 
 export type HostSlot = PublicSlot & {
@@ -34,4 +36,4 @@ export type BookingConfirmation = { id: string; slot: PublicSlot; name: string; 
 
 export type ConfirmationMessage = { message: string; source: "ai" | "template" };
 
-export type AppConfig = { timeZone: string; hostName: string; hostKeyRequired: boolean };
+export type AppConfig = { timeZone: string; hostName: string; hostKeyRequired: boolean; calendarConnected: boolean };

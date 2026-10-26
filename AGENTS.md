@@ -9,6 +9,7 @@ Keep it small: no auth, no multi-tenancy and no state machine. Reviewers grade i
 - `backend/`: NestJS 12, Prisma 7 (`pg` driver adapter), PostgreSQL 16, zod, luxon
     - `src/modules/slots/`: slots and bookings (controller + service + DTOs, Prisma used directly)
     - `src/modules/ai/`: LLM confirmation message (Gemini)
+    - `src/modules/calendar/`: Google Calendar free/busy (service account, fail open)
     - `src/common/`: errors, validation, rate limit, health
     - `src/generated/prisma/`: generated client, never edit
 - `frontend/`: Next.js 16 (React 19, TypeScript), Tailwind 4, shadcn/ui (Base UI), TanStack Query, react-hook-form + zod

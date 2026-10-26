@@ -29,4 +29,8 @@ services:
         sync: false
       - key: GEMINI_MODEL # optional
         sync: false
+      - key: GOOGLE_CALENDAR_ID # optional, the host's calendar ID; both Google vars are needed for the calendar check
+        sync: false
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON # optional, service account key as raw JSON or base64
+        sync: false
       # HOST_KEY is intentionally not set in production.

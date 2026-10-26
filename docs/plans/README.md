@@ -16,7 +16,7 @@ without any earlier conversation.
 | 3 | [phase-3.md](phase-3.md) | Optional extra: AI confirmation message (Gemini free tier) | 1, 2 | ✅ done (live Gemini call unverified) |
 | 4 | [phase-4.md](phase-4.md) | Deploy: Neon (DB) + Render (API) + Vercel (web) | 1, 2 (3 if done) | 🚧 in progress (repo prep done; deploy pending user accounts) |
 | 5 | [phase-5.md](phase-5.md) | README, final QA, submission email, video script | 4, 6 | ⏳ todo |
-| 6 | [phase-6.md](phase-6.md) | Second extra: Google Calendar conflicts (free/busy, marked unavailable) | 1, 2, 3 | ⏳ todo |
+| 6 | [phase-6.md](phase-6.md) | Second extra: Google Calendar conflicts (free/busy, marked unavailable) | 1, 2, 3 | ✅ done (live Google call unverified) |
 
 ```
 0 ──► 1 ──┬──► 3 ──► 4 ──► 5

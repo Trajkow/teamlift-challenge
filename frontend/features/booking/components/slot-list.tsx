@@ -6,7 +6,8 @@ import { formatClock, formatDate, todayIn } from "@/lib/time";
 import type { PublicSlot } from "@/lib/schemas/slots";
 import { cn } from "@/lib/utils";
 
-/** Future slots grouped by day. Available slots are buttons; booked ones are muted, struck through and disabled. */
+/** Future slots grouped by day. Available slots are buttons; booked ones are muted, struck through and disabled,
+ *  and ones that clash with the host's calendar are muted and labelled Busy (always shown, never struck through). */
 export function SlotList({
   slots,
   timeZone,
@@ -26,7 +27,7 @@ export function SlotList({
   return (
     <div className="flex flex-col gap-2">
       {groups.map((g) => {
-        const open = g.items.filter((s) => !s.isBooked).length;
+        const open = g.items.filter((s) => !s.isBooked && !s.isBusy).length;
         const dayLabel = formatDate(g.date, { weekday: "long", month: "long", day: "numeric" });
         return (
           <section key={g.date} aria-label={dayLabel}>
@@ -46,6 +47,21 @@ export function SlotList({
                         >
                           <span className="text-[0.9375rem] leading-none font-medium whitespace-nowrap tabular-nums line-through">{time}</span>
                           <span className="mt-0.5 text-[0.6875rem] leading-none">Booked</span>
+                        </button>
+                      </li>
+                    );
+                  }
+                  if (s.isBusy) {
+                    return (
+                      <li key={s.id}>
+                        <button
+                          type="button"
+                          disabled
+                          aria-label={`${time} on ${dayLabel}, busy, the host has a calendar event`}
+                          className="flex h-11 w-full flex-col items-center justify-center rounded-full bg-muted/60 text-muted-foreground ring-1 ring-border ring-inset"
+                        >
+                          <span className="text-[0.9375rem] leading-none font-medium whitespace-nowrap tabular-nums">{time}</span>
+                          <span className="mt-0.5 text-[0.6875rem] leading-none">Busy</span>
                         </button>
                       </li>
                     );

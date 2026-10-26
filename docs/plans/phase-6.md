@@ -1,6 +1,6 @@
 # Phase 6: Second Extra (Google Calendar Conflicts)
 
-**Status: ⏳ todo** · Depends on: 1, 2, 3 · Unblocks: 5 (README mentions both extras)
+**Status: ✅ done (live Google call unverified)** · Depends on: 1, 2, 3 · Unblocks: 5 (README mentions both extras)
 
 ## Goal
 The brief's first optional extra: connect the host's Google Calendar so slots that clash with existing events are
@@ -103,4 +103,25 @@ Live check after the user adds the key: create a slot that overlaps a real calen
 Writing bookings into the calendar, OAuth, multiple calendars.
 
 ## Handoff notes
-_(fill in)_
+- **Built:** `backend/src/modules/calendar/`: `calendar.types.ts` (`CalendarClient`, `CALENDAR_CLIENT` token, 3 s
+  timeout, 60 s cache constants), `service-account-key.ts` (raw JSON or base64), `google-calendar.client.ts`
+  (`google-auth-library` `JWT.getAccessToken()` + `fetch` to freeBusy, zod-parsed response),
+  `calendar-busy.service.ts` (`busyIntervals`, pure `isBusy`, cache, timeout, never throws), `calendar.module.ts`
+  (factory provider: real client, or `null` = feature off). The 3 s timeout lives in the service (it passes an
+  `AbortSignal` to the client and also races it), so it covers fake clients too.
+- **Wiring:** `SlotsService` fetches busy intervals once per list (min start to max end of the listed slots) for the
+  public and host lists; `book()` re-checks that single slot with `fresh: true` (skips the cache) after the
+  `SLOT_TAKEN` check and throws 409 `SLOT_UNAVAILABLE`. `isBusy` is never true for a booked slot. `calendarConnected`
+  in `/api/config` is true when the client exists (both env vars set and the key parses).
+- **Frontend:** Busy pills (muted, label "Busy", not struck through, always shown regardless of "Show booked", not
+  counted in "N available"); host rows get a warning "Calendar conflict" badge; host header pill shows
+  connected/not connected; `SLOT_UNAVAILABLE` has a message and closes the dialog and refetches like `SLOT_TAKEN`.
+- **Tests:** unit specs for overlap (inside, both edges, back-to-back, all-day), key parsing, cache hit/expiry,
+  Google errors and timeout; e2e `test/calendar.e2e-spec.ts` with an injected fake client (busy + 409, fail open,
+  back-to-back, cache bypass on booking, no-env config). No test calls Google.
+- **Unverified:** the live Google call (no service account was available): auth scope, the freeBusy request/response
+  handling and sharing permission ("See only free/busy") are untested against the real API. Follow the "Google
+  Calendar" section of `docs/deploy.md` and set `GOOGLE_CALENDAR_ID` and `GOOGLE_SERVICE_ACCOUNT_JSON`.
+- **Known limit:** Google may reject very long freeBusy ranges (the host list covers all upcoming slots); that fails
+  open and shows slots as not busy.
+- Never logged: key, event data, guest PII (only the error class name is logged).

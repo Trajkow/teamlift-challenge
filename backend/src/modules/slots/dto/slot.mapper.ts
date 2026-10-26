@@ -4,27 +4,36 @@ type HostSlotInput = SlotRow & {
   booking: {id: string; name: string; email: string; note: string | null; createdAt: Date} | null;
 };
 
-export type PublicSlot = {id: string; startsAt: string; endsAt: string; durationMinutes: number; isBooked: boolean};
+export type PublicSlot = {
+  id: string;
+  startsAt: string;
+  endsAt: string;
+  durationMinutes: number;
+  isBooked: boolean;
+  /** Clashes with the host's Google Calendar (never true for a booked slot). */
+  isBusy: boolean;
+};
 export type HostSlot = PublicSlot & {
   booking: {id: string; name: string; email: string; note: string | null; createdAt: string} | null;
 };
 export type BookingConfirmation = {id: string; slot: PublicSlot; name: string; createdAt: string};
 
 /** Public view: never reads booker details. */
-export function toPublicSlot(slot: PublicSlotInput): PublicSlot {
+export function toPublicSlot(slot: PublicSlotInput, isBusy = false): PublicSlot {
   return {
     id: slot.id,
     startsAt: slot.startsAt.toISOString(),
     endsAt: slot.endsAt.toISOString(),
     durationMinutes: Math.round((slot.endsAt.getTime() - slot.startsAt.getTime()) / 60_000),
     isBooked: slot.booking !== null,
+    isBusy: isBusy && slot.booking === null,
   };
 }
 
 /** Host view: the only mapper allowed to expose booking name, email and note. */
-export function toHostSlot(slot: HostSlotInput): HostSlot {
+export function toHostSlot(slot: HostSlotInput, isBusy = false): HostSlot {
   return {
-    ...toPublicSlot(slot),
+    ...toPublicSlot(slot, isBusy),
     booking: slot.booking && {
       id: slot.booking.id,
       name: slot.booking.name,

@@ -27,8 +27,9 @@ export function BookingPage() {
   const timeZone = config.data?.timeZone;
   const hostName = config.data?.hostName ?? "the host";
   // A selection only counts while the slot is still open (a refetch may have flipped it to booked).
-  const selected = slots.data?.find((s) => s.id === selectedId && !s.isBooked) ?? null;
-  const open = slots.data?.filter((s) => !s.isBooked).length ?? 0;
+  const selected = slots.data?.find((s) => s.id === selectedId && !s.isBooked && !s.isBusy) ?? null;
+  const hasVisible = slots.data?.some((s) => !s.isBooked || s.isBusy) ?? false;
+  const open = slots.data?.filter((s) => !s.isBooked && !s.isBusy).length ?? 0;
 
   const header = (
     <PageHeader
@@ -97,7 +98,7 @@ export function BookingPage() {
               Show booked
             </Button>
           </div>
-          {!showBooked && open === 0 ? (
+          {!showBooked && !hasVisible ? (
             <EmptyState icon={CalendarX2Icon} compact title="No open slots right now" description="Check back soon, or show booked slots." />
           ) : (
             <SlotList

@@ -52,7 +52,7 @@ export function BookingDialog({
       });
       onBooked(booking);
     } catch (err) {
-      if (isApiError(err, "SLOT_TAKEN") || isApiError(err, "SLOT_IN_PAST") || isApiError(err, "NOT_FOUND")) {
+      if (isApiError(err, "SLOT_TAKEN") || isApiError(err, "SLOT_UNAVAILABLE") || isApiError(err, "SLOT_IN_PAST") || isApiError(err, "NOT_FOUND")) {
         toastError(err);
         onSlotGone();
         return;
