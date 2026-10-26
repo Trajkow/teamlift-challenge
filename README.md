@@ -17,7 +17,7 @@ docs/screenshots/ and link them here. -->
 |---|---|
 | 1. Create available slots (date, start time, duration) | `/host`, "Publish slots". One start time plus a count creates back-to-back slots. |
 | 2. See the list of available slots | `/`, time pills grouped by day, in the one time zone. |
-| 3. Book a slot with name and email | Click a pill, fill in the form, get a confirmation with an "Add to calendar" `.ics` download. |
+| 3. Book a slot with name and email | Pick a time and it turns into "time │ Book →"; press Book, fill in the form, get a confirmation with an "Add to calendar" `.ics` download. |
 | 4. A booked slot is no longer available | Booked slots stay on the page, greyed out and labelled "Booked". The database refuses a second booking. |
 
 Both optional extras are in:
@@ -105,9 +105,11 @@ Deploying (Neon + Render + Vercel) is described in [docs/deploy.md](docs/deploy.
 - **Booked and busy slots stay visible.** Greyed out and labelled "Booked" or "Busy", so it is clear why a time is
   gone. Past slots are hidden. Public responses never include a guest's name or email; only `/api/host/*` does.
 - **Database constraints over app checks** for no double booking and no overlapping slots (see above).
-- **AI is a separate endpoint with a template fallback.** `POST /api/bookings/:id/confirmation-message` has a 5 s
-  timeout, strips markdown and links from the output, and stores the first AI text it gets. Booking never depends on
-  it. If Gemini fails, the guest sees the template.
+- **AI runs in the background with a template fallback.** Gemini's free tier takes 15 to 25 s, so the message
+  starts generating as soon as a booking is saved and the success screen polls
+  `POST /api/bookings/:id/confirmation-message` ("Writing a note for you…") until it is ready. Output is stripped of
+  markdown and links, and the first AI text is stored. Booking never depends on it: after about 40 s, or if Gemini
+  fails, the guest sees the template.
 - **Google Calendar fails open.** If Google is slow (over 3 s) or unreachable, slots show as free and booking
   still works. A booking re-checks the calendar for that one slot and returns `409 SLOT_UNAVAILABLE` if it clashes.
   The host's OAuth refresh token is stored encrypted (AES-256-GCM), is never logged or returned, and only the
@@ -123,7 +125,7 @@ backend, frontend, AI, deploy, README, Google Calendar, host OAuth), and agents 
 time on their own branches, following the rules in [AGENTS.md](AGENTS.md). A coordinating Claude Code session ran lint
 and build on each branch, reviewed it and fixed issues before merging, for example clearing lint warnings, logging the
 reason when the calendar check fails, and rejecting truncated auth tags when decrypting the calendar token. I made the
-product decisions (theme, no host key, both extras, the host connecting their own calendar) and set up the hosting. Gemini is used inside the app for the confirmation message.
+product decisions (theme, both extras, the host connecting their own calendar) and set up the hosting. Gemini is used inside the app for the confirmation message.
 
 ## With more time
 
