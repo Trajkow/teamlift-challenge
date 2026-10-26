@@ -1,6 +1,6 @@
 # Phase 5: README, QA and Submission
 
-**Status: ⏳ todo** · Depends on: 4
+**Status: 🚧 in progress (README done; live URLs + author review pending)** · Depends on: 4
 
 ## Goal
 Turn the build into a submission that scores on every evaluation criterion: UI, a flow that works end to end,
@@ -67,4 +67,21 @@ Draft this email for the user. **Never send it on their behalf.**
 - `docs: write readme with setup, choices and ai usage`
 
 ## Handoff notes
-_(fill in: submitted on, links)_
+- **Done:** `README.md` (all 7 sections, both extras), `.gitignore` now has `*.local.md`, and the git-ignored
+  `SUBMISSION.local.md` (repo root) holds the email draft (5.3) and the video script (5.4). Nothing was sent.
+- **Placeholders to fill (orchestrator/author):** `<LIVE_URL>` and `<API_URL>` in `README.md` (top section); in
+  `SUBMISSION.local.md`: `<LIVE_URL>`, `<REPO_URL>`, `<VIDEO_URL>`, `<Your Full Name>`. Also the video link line in
+  the README (or delete it), and the screenshots: the README has an HTML comment where they go (no browser tool
+  was connected, so `docs/screenshots/` does not exist).
+- **Author review needed:** the "AI tools I used" section is a factual draft marked
+  `<!-- TODO(author): review and rewrite in your own words -->`. Remove the marker once it is true and in your words.
+- **Local QA (backend on :3600, frontend dev on :3601, slot_db seeded; both stopped afterwards), through the
+  frontend proxy:** create 4 back-to-back slots 201; overlapping slot 409 `SLOT_OVERLAP`; book 201; double-book 409
+  `SLOT_TAKEN`; invalid body 400 `VALIDATION_FAILED` with issues; public list has no name/email; host list shows the
+  booker; AI endpoint returns `source: 'template'` (no key) and 404 for an unknown booking; deleting a booked slot
+  409 `SLOT_BOOKED`; cancel booking 204 then rebook 201; delete free slot 204; past slot 422 `SLOT_IN_PAST`;
+  `/api/config` `calendarConnected: false`; `/api/host/calendar` returns `connected: false, oauthAvailable: false`;
+  `/api/host/calendar/connect` with OAuth unset redirects to `/host?calendar=error`; `/` and `/host` return 200.
+  Test slots (QA Guest bookings on one day ~20 days out) remain in the local `slot_db` only.
+- **Not verified:** visual/browser QA (themes, phone width, console errors, two-tab race), live Gemini and Google
+  OAuth/Calendar calls, all of 5.2 on the live link, and README links to the live site. Live QA waits for the URLs.
