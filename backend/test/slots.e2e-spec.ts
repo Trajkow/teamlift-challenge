@@ -28,7 +28,7 @@ const book = (id: string, body: object = {name: 'Ana', email: 'Ana@Example.com'}
 describe('config and health', () => {
   it('returns config', async () => {
     const res = await t.http.get('/api/config');
-    expect(res.body).toEqual({timeZone: 'Europe/Skopje', hostName: null, hostKeyRequired: false});
+    expect(res.body).toEqual({timeZone: 'Europe/Skopje', hostName: null, hostKeyRequired: false, calendarConnected: false});
   });
 });
 

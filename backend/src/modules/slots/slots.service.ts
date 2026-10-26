@@ -3,6 +3,8 @@ import {randomUUID} from 'node:crypto';
 import {AppError} from '../../common/errors/app-error.js';
 import {collectCodes} from '../../common/errors/error-codes.js';
 import {isUniqueViolation} from '../../common/errors/unique-violation.js';
+import {CalendarBusyService, isBusy} from '../calendar/calendar-busy.service.js';
+import type {Interval} from '../calendar/calendar.types.js';
 import {ConfirmationMessageService} from '../ai/confirmation-message.service.js';
 import {templateMessage} from '../ai/prompt.js';
 import {PrismaService} from '../../prisma/prisma.service.js';
@@ -30,6 +32,7 @@ export class SlotsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ai: ConfirmationMessageService,
+    private readonly calendar: CalendarBusyService,
   ) {}
 
   config() {
@@ -37,7 +40,16 @@ export class SlotsService {
       timeZone: appTimeZone(),
       hostName: process.env.HOST_NAME || null,
       hostKeyRequired: !!process.env.HOST_KEY,
+      calendarConnected: this.calendar.connected,
     };
+  }
+
+  /** Busy intervals covering all given slots (one lookup), or null when unknown. */
+  private async busyFor(slots: {startsAt: Date; endsAt: Date}[]): Promise<Interval[] | null> {
+    if (slots.length === 0 || !this.calendar.connected) return null;
+    const from = new Date(Math.min(...slots.map((s) => s.startsAt.getTime())));
+    const to = new Date(Math.max(...slots.map((s) => s.endsAt.getTime())));
+    return this.calendar.busyIntervals(from, to);
   }
 
   async listPublic(query: ListSlotsDto): Promise<PublicSlot[]> {
@@ -51,7 +63,8 @@ export class SlotsService {
       include: {booking: {select: {id: true}}},
       orderBy: {startsAt: 'asc'},
     });
-    return slots.map(toPublicSlot);
+    const busy = await this.busyFor(slots);
+    return slots.map((s) => toPublicSlot(s, !!busy && isBusy(s, busy)));
   }
 
   async listHost(query: ListHostSlotsDto): Promise<HostSlot[]> {
@@ -60,7 +73,8 @@ export class SlotsService {
       include: {booking: HOST_BOOKING},
       orderBy: {startsAt: 'asc'},
     });
-    return slots.map(toHostSlot);
+    const busy = await this.busyFor(slots);
+    return slots.map((s) => toHostSlot(s, !!busy && isBusy(s, busy)));
   }
 
   async createSlots(dto: CreateSlotsDto): Promise<HostSlot[]> {
@@ -81,7 +95,7 @@ export class SlotsService {
         orderBy: {startsAt: 'asc'},
       });
     });
-    return created.map(toHostSlot);
+    return created.map((s) => toHostSlot(s));
   }
 
   async book(slotId: string, dto: CreateBookingDto): Promise<BookingConfirmation> {
@@ -93,6 +107,11 @@ export class SlotsService {
       throw new AppError(422, 'SLOT_IN_PAST', 'This slot has already started');
     }
     if (slot.booking) throw new AppError(409, 'SLOT_TAKEN', 'This slot is already booked');
+    // Fresh check (no cache) for this one slot; if the calendar can't be reached the booking goes through.
+    const busy = await this.calendar.busyIntervals(slot.startsAt, slot.endsAt, {fresh: true});
+    if (busy && isBusy(slot, busy)) {
+      throw new AppError(409, 'SLOT_UNAVAILABLE', "This time clashes with the host's calendar.");
+    }
     try {
       const booking = await this.prisma.booking.create({
         data: {slotId, name: dto.name, email: dto.email, note: dto.note ?? null},
