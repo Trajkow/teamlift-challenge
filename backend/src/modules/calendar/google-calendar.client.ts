@@ -31,23 +31,30 @@ export class GoogleCalendarClient implements CalendarClient {
   async freeBusy(from: Date, to: Date, signal: AbortSignal): Promise<Interval[]> {
     const {token} = await this.jwt.getAccessToken();
     if (!token) throw new Error('no access token');
-    const res = await fetch(FREEBUSY_URL, {
-      method: 'POST',
-      headers: {authorization: `Bearer ${token}`, 'content-type': 'application/json'},
-      body: JSON.stringify({
-        timeMin: from.toISOString(),
-        timeMax: to.toISOString(),
-        items: [{id: this.calendarId}],
-      }),
-      signal,
-    });
-    if (!res.ok) throw new Error(`freeBusy HTTP ${res.status}`);
-    const parsed = responseSchema.parse(await res.json());
-    const calendar = parsed.calendars[this.calendarId];
-    if (!calendar) throw new Error('calendar missing from freeBusy response');
-    if (calendar.errors?.length) throw new Error('freeBusy reported a calendar error');
-    return calendar.busy.map((b) => ({start: new Date(b.start), end: new Date(b.end)}));
+    return fetchFreeBusy(token, this.calendarId, from, to, signal);
   }
+}
+
+/** One freeBusy call (busy intervals only). Shared by the service account and OAuth clients. */
+export async function fetchFreeBusy(
+  token: string,
+  calendarId: string,
+  from: Date,
+  to: Date,
+  signal: AbortSignal,
+): Promise<Interval[]> {
+  const res = await fetch(FREEBUSY_URL, {
+    method: 'POST',
+    headers: {authorization: `Bearer ${token}`, 'content-type': 'application/json'},
+    body: JSON.stringify({timeMin: from.toISOString(), timeMax: to.toISOString(), items: [{id: calendarId}]}),
+    signal,
+  });
+  if (!res.ok) throw new Error(`freeBusy HTTP ${res.status}`);
+  const parsed = responseSchema.parse(await res.json());
+  const calendar = parsed.calendars[calendarId];
+  if (!calendar) throw new Error('calendar missing from freeBusy response');
+  if (calendar.errors?.length) throw new Error('freeBusy reported a calendar error');
+  return calendar.busy.map((b) => ({start: new Date(b.start), end: new Date(b.end)}));
 }
 
 /** Builds the real client from env, or null (feature off) when either variable is missing or the key is invalid. */

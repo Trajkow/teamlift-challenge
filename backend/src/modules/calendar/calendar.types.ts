@@ -10,3 +10,8 @@ export type CalendarClient = {
 export const CALENDAR_CLIENT = Symbol('CALENDAR_CLIENT');
 export const CALENDAR_TIMEOUT_MS = 3_000;
 export const CALENDAR_CACHE_MS = 60_000;
+
+export type CalendarSourceName = 'oauth' | 'service_account';
+
+/** What the resolver chose for this request. `client` is null when nothing usable is configured. */
+export type CalendarSource = {client: CalendarClient | null; source: CalendarSourceName | null};

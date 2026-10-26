@@ -35,18 +35,18 @@ export class SlotsService {
     private readonly calendar: CalendarBusyService,
   ) {}
 
-  config() {
+  async config() {
     return {
       timeZone: appTimeZone(),
       hostName: process.env.HOST_NAME || null,
       hostKeyRequired: !!process.env.HOST_KEY,
-      calendarConnected: this.calendar.connected,
+      calendarConnected: await this.calendar.isConnected(),
     };
   }
 
   /** Busy intervals covering all given slots (one lookup), or null when unknown. */
   private async busyFor(slots: {startsAt: Date; endsAt: Date}[]): Promise<Interval[] | null> {
-    if (slots.length === 0 || !this.calendar.connected) return null;
+    if (slots.length === 0) return null;
     const from = new Date(Math.min(...slots.map((s) => s.startsAt.getTime())));
     const to = new Date(Math.max(...slots.map((s) => s.endsAt.getTime())));
     return this.calendar.busyIntervals(from, to);

@@ -1,5 +1,9 @@
-import {Inject, Injectable, Logger, Optional} from '@nestjs/common';
-import {CALENDAR_CACHE_MS, CALENDAR_CLIENT, CALENDAR_TIMEOUT_MS, type CalendarClient, type Interval} from './calendar.types.js';
+import {Inject, Injectable, Logger} from '@nestjs/common';
+import {CalendarClientResolver} from './calendar-client.resolver.js';
+import {CALENDAR_CACHE_MS, CALENDAR_TIMEOUT_MS, type CalendarSource, type Interval} from './calendar.types.js';
+
+/** What the busy service needs from the resolver; tests pass a plain object. */
+export type CalendarSourceProvider = {resolve(): Promise<CalendarSource>};
 
 /** Half-open overlap: back-to-back (slot ends exactly when an event starts) is not a clash. */
 export function isBusy(slot: {startsAt: Date; endsAt: Date}, intervals: Interval[]): boolean {
@@ -11,15 +15,21 @@ export class CalendarBusyService {
   private readonly logger = new Logger(CalendarBusyService.name);
   private readonly cache = new Map<string, {at: number; intervals: Interval[]}>();
 
-  constructor(@Optional() @Inject(CALENDAR_CLIENT) private readonly client?: CalendarClient | null) {}
+  constructor(@Inject(CalendarClientResolver) private readonly resolver: CalendarSourceProvider) {}
 
-  get connected(): boolean {
-    return !!this.client;
+  /** True when a usable client exists right now (an OAuth connection that works, or the service account). */
+  async isConnected(): Promise<boolean> {
+    return !!(await this.resolver.resolve()).client;
+  }
+
+  /** Forget cached results, e.g. after the host connects or disconnects. */
+  clearCache() {
+    this.cache.clear();
   }
 
   /** Busy intervals in the range, or null when unknown (not configured, timeout or any failure). Never throws. */
   async busyIntervals(from: Date, to: Date, opts: {fresh?: boolean} = {}): Promise<Interval[] | null> {
-    const client = this.client;
+    const {client} = await this.resolver.resolve();
     if (!client) return null;
     const key = `${from.toISOString()}|${to.toISOString()}`;
     const hit = this.cache.get(key);
